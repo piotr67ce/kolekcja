@@ -3,37 +3,35 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Moja Kolekcja Broni</title>
-    <style>
-        body { margin: 0; background-color: #f5f5f0; font-family: 'Segoe UI', sans-serif; color: #333; }
-        header { background: #fff; padding: 20px; text-align: center; border-bottom: 1px solid #ccc; position: sticky; top: 0; z-index: 100; }
-        
-        .container { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; padding: 20px; max-width: 1400px; margin: 0 auto; }
-        .card { background: white; border: 1px solid #ddd; padding: 15px; cursor: pointer; transition: 0.3s; text-align: center; }
-        .card:hover { transform: translateY(-5px); box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
-        .card img { width: 100%; height: 200px; object-fit: cover; border-radius: 4px; background: #eee; }
-        
-        /* MODAL - Szczegóły broni */
-        #modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); display: none; z-index: 1000; justify-content: center; align-items: center; }
-        #modal-content { background: white; width: 90%; max-width: 900px; max-height: 85vh; overflow-y: auto; padding: 25px; position: relative; border-radius: 8px; }
-        .modal-gallery { display: flex; gap: 10px; overflow-x: auto; padding: 15px 0; border-bottom: 1px solid #eee; margin-bottom: 15px; }
-        .modal-gallery img { height: 120px; cursor: pointer; border: 2px solid #ddd; transition: 0.2s; }
-        .modal-gallery img:hover { border-color: #b2945e; }
-        .close-btn { position: absolute; top: 10px; right: 20px; font-size: 40px; cursor: pointer; color: #666; }
-
-        /* LIGHTBOX - Duże zdjęcie */
-        #lightbox-overlay { position: fixed; inset: 0; background: #000; display: none; z-index: 2000; justify-content: center; align-items: center; }
-        #lightbox-img { max-width: 95%; max-height: 95%; border: 1px solid #333; }
-        .lb-close { position: absolute; top: 15px; right: 25px; color: white; font-size: 50px; cursor: pointer; z-index: 2100; }
-        
-        /* Nawigacja w Lightbox */
-        .lb-nav { position: absolute; color: white; font-size: 60px; cursor: pointer; padding: 20px; user-select: none; top: 50%; transform: translateY(-50%); }
-        .lb-prev { left: 10px; } .lb-next { right: 10px; }
-    </style>
+    <title>Kolekcja Broni - Galeria</title>
+     #modal-overlay, #lightbox-overlay { position: fixed; inset: 0; display: none; justify-content: center; align-items: center; }
+        #modal-overlay { background: rgba(0,0,0,0.85); z-index: 1000; }
+        /* Znajdź w kodzie sekcję .card .short-desc i podmień na to: */
+.card .short-desc { 
+    color: #666; 
+    font-style: italic; 
+    font-size: 0.85rem; 
+    line-height: 1.3;
+    
+    /* Reguła ucinająca tekst po 3 liniach: */
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    height: 3.9em; /* Opcjonalnie: stała wysokość (3 linie * 1.3 line-height) */
+}
 </head>
 <body>
 
-<header><h1>Kolekcja Broni</h1></header>
+<header>
+    <h1>Kolekcja Broni</h1>
+    <div class="tools">
+        <input type="text" id="search-bar" placeholder="Szukaj nazwy, kraju lub opisu..." oninput="filterData()">
+        <select id="country-filter" onchange="filterData()">
+            <option value="">Wszystkie kraje</option>
+        </select>
+    </div>
+</header>
 
 <div class="container" id="gallery">Ładowanie danych...</div>
 
@@ -46,9 +44,9 @@
 
 <div id="lightbox-overlay" onclick="closeL()">
     <span class="lb-close" onclick="closeL()">&times;</span>
-    <div class="lb-nav lb-prev" onclick="move(-1, event)">&#10094;</div>
+    <div class="nav" style="left:10px" onclick="move(-1, event)">&#10094;</div>
     <img id="lightbox-img" src="">
-    <div class="lb-nav lb-next" onclick="move(1, event)">&#10095;</div>
+    <div class="nav" style="right:10px" onclick="move(1, event)">&#10095;</div>
 </div>
 
 <script>
@@ -56,7 +54,6 @@
     let currentPhotos = [];
     let currentIdx = 0;
 
-    // Najprostsza budowa linku
     function getUrl(id, size = 'w800') {
         if (!id) return '';
         return `https://drive.google.com/thumbnail?id=${id.toString().trim()}&sz=${size}`;
@@ -67,40 +64,68 @@
         allItems = rows.map(r => {
             const c = r.c;
             if (!c || !c[1]) return null;
-            
             let pics = [];
-            // Szukamy ID w kolumnach H, I, J, K...
             for (let i = 7; i < c.length; i++) {
                 if (c[i] && c[i].v && c[i].v.length > 15) pics.push(c[i].v);
             }
-
             return {
                 nazwa: c[1]?.v || '',
                 kraj: c[2]?.v || '',
                 wiek: c[4]?.v || '',
-                opisFull: c[6]?.v || '',
+                opisKrotki: c[5]?.v || '', // Kolumna F
+                opisFull: c[6]?.v || '',   // Kolumna G
                 zdjecia: pics
             };
         }).filter(x => x && x.zdjecia.length > 0);
         
-        renderGallery();
+        setupFilters();
+        renderGallery(allItems);
     };
 
-    function renderGallery() {
+    function setupFilters() {
+        const countries = [...new Set(allItems.map(item => item.kraj))].sort();
+        const select = document.getElementById('country-filter');
+        countries.forEach(c => {
+            if(c) select.innerHTML += `<option value="${c}">${c}</option>`;
+        });
+    }
+
+    function filterData() {
+        const searchTerm = document.getElementById('search-bar').value.toLowerCase();
+        const countryTerm = document.getElementById('country-filter').value;
+
+        const filtered = allItems.filter(item => {
+            const matchesSearch = item.nazwa.toLowerCase().includes(searchTerm) || 
+                                  item.kraj.toLowerCase().includes(searchTerm) || 
+                                  item.opisKrotki.toLowerCase().includes(searchTerm);
+            const matchesCountry = countryTerm === "" || item.kraj === countryTerm;
+            return matchesSearch && matchesCountry;
+        });
+        renderGallery(filtered);
+    }
+
+    function renderGallery(data) {
         const gal = document.getElementById('gallery');
-        gal.innerHTML = allItems.map((item, i) => `
-            <div class="card" onclick="openModal(${i})">
+        if(data.length === 0) {
+            gal.innerHTML = "<p>Nie znaleziono pasujących przedmiotów.</p>";
+            return;
+        }
+        gal.innerHTML = data.map((item, i) => {
+            // Szukamy oryginalnego indeksu w allItems dla poprawnego otwierania modala
+            const originalIndex = allItems.indexOf(item);
+            return `
+            <div class="card" onclick="openModal(${originalIndex})">
                 <img src="${getUrl(item.zdjecia[0], 'w600')}">
                 <h3>${item.nazwa}</h3>
-                <p style="font-size: 0.9rem; color: #777;">${item.kraj} | ${item.wiek}</p>
+                <div class="meta">${item.kraj} | ${item.wiek}</div>
+                <div class="short-desc">${item.opisKrotki}</div>
             </div>
-        `).join('');
+        `}).join('');
     }
 
     window.openModal = function(i) {
         const item = allItems[i];
         currentPhotos = item.zdjecia;
-        
         let thumbnailsHtml = item.zdjecia.map((id, idx) => 
             `<img src="${getUrl(id, 'w400')}" onclick="openLightbox(${idx}, event)">`
         ).join('');
@@ -115,14 +140,14 @@
     };
 
     window.openLightbox = function(idx, e) {
-        if(e) e.stopPropagation();
+        e.stopPropagation();
         currentIdx = idx;
         document.getElementById('lightbox-img').src = getUrl(currentPhotos[currentIdx], 'w1600');
         document.getElementById('lightbox-overlay').style.display = 'flex';
     };
 
     window.move = function(step, e) {
-        if(e) e.stopPropagation();
+        e.stopPropagation();
         currentIdx = (currentIdx + step + currentPhotos.length) % currentPhotos.length;
         document.getElementById('lightbox-img').src = getUrl(currentPhotos[currentIdx], 'w1600');
     };
@@ -130,11 +155,9 @@
     window.closeM = () => document.getElementById('modal-overlay').style.display = 'none';
     window.closeL = () => document.getElementById('lightbox-overlay').style.display = 'none';
 
-    // Pobieranie danych z Twojego arkusza
-    const sheetScript = document.createElement('script');
-    sheetScript.src = "https://docs.google.com/spreadsheets/d/1EJYBKJowcGvMT8_Dh6bxnY0swD85dW1SO50_c9jTTa4/gviz/tq?tqx=responseHandler:handleData&gid=1129470117";
-    document.body.appendChild(sheetScript);
+    const s = document.createElement('script');
+    s.src = "https://docs.google.com/spreadsheets/d/1EJYBKJowcGvMT8_Dh6bxnY0swD85dW1SO50_c9jTTa4/gviz/tq?tqx=responseHandler:handleData&gid=1129470117";
+    document.body.appendChild(s);
 </script>
-
 </body>
 </html>
