@@ -62,7 +62,37 @@
         .close-btn { position: absolute; top: 15px; right: 25px; font-size: 40px; cursor: pointer; color: #888; }
         .lb-close { position: absolute; top: 20px; right: 30px; color: white; font-size: 50px; cursor: pointer; }
         .nav { position: absolute; color: white; font-size: 60px; cursor: pointer; padding: 30px; top: 50%; transform: translateY(-50%); user-select: none; }
+  
+    /* Tło lightboxa */
+#lightbox-overlay { 
+    position: fixed; inset: 0; background: #000; 
+    display: none; z-index: 2000; 
+    justify-content: center; align-items: center; 
+    overflow: hidden; /* Ważne przy zoomie */
+}
+
+/* Obrazek w lightboxie */
+#lightbox-img { 
+    max-width: 95%; max-height: 95%; 
+    object-fit: contain; 
+    transition: transform 0.3s ease; 
+    cursor: zoom-in; 
+    transform-origin: center; /* Domyślnie środek */
+}
+
+/* Stan po kliknięciu */
+#lightbox-img.zoomed {
+    transform: scale(2.5); /* Powiększenie 250% */
+    cursor: zoom-out;
+}
+
+/* Ukrycie przycisków nawigacji podczas zoomu, żeby nie zasłaniały detali */
+#lightbox-img.zoomed ~ .nav {
+    opacity: 0;
+    pointer-events: none;
+}    
     </style>
+    
 </head>
 <body>
 
@@ -198,12 +228,19 @@
         document.body.style.overflow = 'hidden';
     };
 
-    window.openLightbox = function(idx, e) {
-        e.stopPropagation();
-        currentIdx = idx;
-        document.getElementById('lightbox-img').src = getUrl(currentPhotos[currentIdx], 'w1600');
-        document.getElementById('lightbox-overlay').style.display = 'flex';
-    };
+ window.openLightbox = function(idx, e) {
+    if(e) e.stopPropagation();
+    currentIdx = idx;
+    const img = document.getElementById('lightbox-img');
+    
+    // Czyścimy poprzedni zoom
+    img.classList.remove('zoomed');
+    img.style.transformOrigin = 'center';
+    
+    // Pobieramy obraz w wysokiej jakości (w4000 dla detali)
+    img.src = getUrl(currentPhotos[currentIdx], 'w4000');
+    document.getElementById('lightbox-overlay').style.display = 'flex';
+};
 
     window.move = function(step, e) {
         e.stopPropagation();
@@ -217,9 +254,44 @@
     const s = document.createElement('script');
     s.src = "https://docs.google.com/spreadsheets/d/1EJYBKJowcGvMT8_Dh6bxnY0swD85dW1SO50_c9jTTa4/gviz/tq?tqx=responseHandler:handleData&gid=1129470117";
     document.body.appendChild(s);
+
+// --- TEGO MOŻE BRAKOWAĆ, WIĘC TO DOPISZ NA KOŃCU SKRYPTU ---
+
+const lbImg = document.getElementById('lightbox-img');
+const lbOverlay = document.getElementById('lightbox-overlay');
+
+// Obsługa kliknięcia w obraz (Zoom In / Zoom Out)
+lbImg.addEventListener('click', function(e) {
+    e.stopPropagation();
+    this.classList.toggle('zoomed');
+    if (this.classList.contains('zoomed')) {
+        updateZoomOrigin(e);
+    }
+});
+
+// Funkcja pomocnicza dla punktu powiększenia
+function updateZoomOrigin(e) {
+    const img = document.getElementById('lightbox-img');
+    if (img.classList.contains('zoomed')) {
+        const x = (e.clientX / window.innerWidth) * 100;
+        const y = (e.clientY / window.innerHeight) * 100;
+        img.style.transformOrigin = `${x}% ${y}%`;
+    }
+}
+
+// Śledzenie myszki podczas zoomu
+lbOverlay.addEventListener('mousemove', updateZoomOrigin);
+
+// Ważne: Resetuj zoom przy zamykaniu lightboxa
+// Podmień swoją funkcję closeL na tę:
+window.closeL = function() {
+    const img = document.getElementById('lightbox-img');
+    img.style.display = 'none'; // Ukryj stary obraz przed zmianą src
+    img.classList.remove('zoomed');
+    document.getElementById('lightbox-overlay').style.display = 'none';
+};
+    
 </script>
 </body>
 </html>
-
-
 
