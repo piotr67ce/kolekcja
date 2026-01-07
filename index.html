@@ -246,12 +246,11 @@
     window.move = function(step, e) {
         e.stopPropagation();
         currentIdx = (currentIdx + step + currentPhotos.length) % currentPhotos.length;
-        document.getElementById('lightbox-img').src = getUrl(currentPhotos[currentIdx], 'w1600');
+      document.getElementById('lightbox-img').src = getUrl(currentPhotos[currentIdx], 'w4000');
     };
 
     window.closeM = () => { document.getElementById('modal-overlay').style.display = 'none'; document.body.style.overflow='auto'; };
-    window.closeL = () => document.getElementById('lightbox-overlay').style.display = 'none';
-
+ 
     const s = document.createElement('script');
     s.src = "https://docs.google.com/spreadsheets/d/1EJYBKJowcGvMT8_Dh6bxnY0swD85dW1SO50_c9jTTa4/gviz/tq?tqx=responseHandler:handleData&gid=1129470117";
     document.body.appendChild(s);
@@ -287,14 +286,17 @@ lbOverlay.addEventListener('mousemove', updateZoomOrigin);
 // Podmień swoją funkcję closeL na tę:
 window.closeL = function() {
     const img = document.getElementById('lightbox-img');
-    img.style.display = 'none'; // Ukryj stary obraz przed zmianą src
-    img.classList.remove('zoomed');
-    document.getElementById('lightbox-overlay').style.display = 'none';
+    img.classList.remove('zoomed'); // Resetuje powiększenie
+    img.style.transformOrigin = 'center'; // Resetuje punkt celowania
+    document.getElementById('lightbox-overlay').style.display = 'none'; // Chowa czarne tło
+    // USUNĘLIŚMY stąd img.style.display = 'none'
+};
 };
     
 </script>
 </body>
 </html>
+
 
 
 
