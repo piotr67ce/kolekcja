@@ -172,10 +172,10 @@
             const idx = allItems.indexOf(item);
             return `
             <div class="card" onclick="openModal(${idx})">
-                <div class="type-badge">${item.typ}</div>
+   
                 <img src="${getUrl(item.zdjecia[0], 'w600')}" loading="lazy">
                 <h3>${item.nazwa}</h3>
-                <div class="meta">${item.kraj} | ${item.wiek}</div>
+                <div class="meta">${item.kraj} | ${item.wiek} | ${item.typ}</div>
                 <div class="short-desc">${item.opisK}</div>
             </div>`;
         }).join('') || "<p style='grid-column:1/-1;text-align:center;'>Brak wyników.</p>";
@@ -221,3 +221,4 @@
 </script>
 </body>
 </html>
+
