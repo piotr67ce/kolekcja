@@ -5,46 +5,64 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Moja Kolekcja Broni</title>
     <style>
-        /* Główne style */
         body { margin: 0; background-color: #f5f5f0; font-family: 'Segoe UI', sans-serif; color: #333; }
-        header { background: #fff; padding: 20px; text-align: center; border-bottom: 1px solid #ccc; position: sticky; top: 0; z-index: 100; }
+        header { background: #fff; padding: 20px 0; text-align: center; border-bottom: 1px solid #ccc; position: sticky; top: 0; z-index: 100; }
         
-        /* Narzędzia: Szukaj i Filtr */
-        .tools { max-width: 1200px; margin: 20px auto; padding: 0 20px; display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
-        input, select { padding: 12px; border: 1px solid #ccc; border-radius: 8px; font-size: 1rem; outline: none; transition: 0.3s; }
-        input:focus { border-color: #b2945e; box-shadow: 0 0 5px rgba(178, 148, 94, 0.3); }
-        #search-bar { flex-grow: 1; max-width: 400px; }
+        /* Stylizacja paska narzędzi - Nagłówek o 25% węższy (max-width: 1050px) */
+        .tools { 
+            max-width: 1050px; 
+            margin: 15px auto; 
+            padding: 0 20px; 
+            display: flex; 
+            gap: 30px; 
+            align-items: center;
+        }
 
-        /* Galeria - Siatka kart */
+        /* Stylizacja pól - równe szerokości dla filtrów */
+        .filter-select { 
+            flex: 0 0 160px; /* Minimalna szerokość to ok. połowa karty (280/2 = 140, dałem 160 dla zapasu) */
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            outline: none;
+        }
+        
+        #search-bar { 
+            flex-grow: 1; /* Search zajmuje resztę miejsca */
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            font-size: 1rem;
+            outline: none;
+        }
+
+        /* Galeria */
         .container { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 25px; padding: 20px; max-width: 1400px; margin: 0 auto; }
         .card { background: white; border: 1px solid #ddd; padding: 15px; cursor: pointer; transition: 0.3s; display: flex; flex-direction: column; border-radius: 8px; }
         .card:hover { transform: translateY(-5px); box-shadow: 0 8px 20px rgba(0,0,0,0.15); }
         .card img { width: 100%; height: 200px; object-fit: cover; border-radius: 4px; background: #eee; }
         
         /* Tekst na karcie */
-        .card h3 { margin: 15px 0 5px 0; font-size: 1.15rem; color: #111; }
-        .card .meta { color: #b2945e; font-weight: bold; font-size: 0.9rem; margin-bottom: 10px; }
+        .card h3 { margin: 15px 0 5px 0; font-size: 1.1rem; color: #111; }
+        .card .type-badge { color: #888; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px; }
+        .card .meta { color: #b2945e; font-weight: bold; font-size: 0.85rem; margin-bottom: 10px; }
         .card .short-desc { 
             color: #666; font-style: italic; font-size: 0.85rem; line-height: 1.4;
             display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
         }
 
-        /* MODAL (Szczegóły) */
-        #modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); display: none; z-index: 1000; justify-content: center; align-items: center; padding: 20px; }
+        /* Modal & Lightbox Styles */
+        #modal-overlay, #lightbox-overlay { position: fixed; inset: 0; display: none; justify-content: center; align-items: center; padding: 20px; }
+        #modal-overlay { background: rgba(0,0,0,0.85); z-index: 1000; }
         #modal-content { background: white; width: 100%; max-width: 900px; max-height: 90vh; overflow-y: auto; padding: 30px; position: relative; border-radius: 12px; }
         .modal-gallery { display: flex; gap: 12px; overflow-x: auto; padding-bottom: 15px; margin-bottom: 20px; border-bottom: 1px solid #eee; }
-        .modal-gallery img { height: 140px; cursor: pointer; border: 2px solid #ddd; border-radius: 4px; transition: 0.2s; }
-        .modal-gallery img:hover { border-color: #b2945e; }
-        
-        /* LIGHTBOX (Duże zdjęcie) */
-        #lightbox-overlay { position: fixed; inset: 0; background: #000; display: none; z-index: 2000; justify-content: center; align-items: center; }
+        .modal-gallery img { height: 120px; cursor: pointer; border: 2px solid #ddd; border-radius: 4px; }
+        #lightbox-overlay { background: #000; z-index: 2000; }
         #lightbox-img { max-width: 95%; max-height: 95%; object-fit: contain; }
-        
-        /* Przyciski i zamknięcie */
         .close-btn { position: absolute; top: 15px; right: 25px; font-size: 40px; cursor: pointer; color: #888; }
         .lb-close { position: absolute; top: 20px; right: 30px; color: white; font-size: 50px; cursor: pointer; }
-        .nav { position: absolute; color: white; font-size: 60px; cursor: pointer; padding: 30px; top: 50%; transform: translateY(-50%); user-select: none; transition: 0.3s; }
-        .nav:hover { color: #b2945e; }
+        .nav { position: absolute; color: white; font-size: 60px; cursor: pointer; padding: 30px; top: 50%; transform: translateY(-50%); user-select: none; }
     </style>
 </head>
 <body>
@@ -52,10 +70,16 @@
 <header>
     <h1>Moja Kolekcja Broni</h1>
     <div class="tools">
-        <input type="text" id="search-bar" placeholder="Szukaj nazwy, kraju lub opisu..." oninput="filterData()">
-        <select id="country-filter" onchange="filterData()">
+        <select id="type-filter" class="filter-select" onchange="filterData()">
+            <option value="">Wszystkie typy</option>
+        </select>
+        <select id="country-filter" class="filter-select" onchange="filterData()">
             <option value="">Wszystkie kraje</option>
         </select>
+        <select id="age-filter" class="filter-select" onchange="filterData()">
+            <option value="">Wszystkie wieki</option>
+        </select>
+        <input type="text" id="search-bar" placeholder="Szukaj..." oninput="filterData()">
     </div>
 </header>
 
@@ -80,126 +104,117 @@
     let currentPhotos = [];
     let currentIdx = 0;
 
-    // Funkcja budująca link do obrazka
     function getUrl(id, size = 'w800') {
         if (!id) return '';
         return `https://drive.google.com/thumbnail?id=${id.toString().trim()}&sz=${size}`;
     }
 
-    // Główna funkcja przetwarzająca dane z arkusza
     window.handleData = function(resp) {
         const rows = resp.table.rows;
         allItems = rows.map(r => {
             const c = r.c;
             if (!c || !c[1]) return null;
-            
-            // Zbieranie wszystkich zdjęć (od kolumny H w prawo)
             let pics = [];
             for (let i = 7; i < c.length; i++) {
                 if (c[i] && c[i].v && c[i].v.length > 15) pics.push(c[i].v);
             }
-
             return {
                 nazwa: c[1]?.v || '',
                 kraj: c[2]?.v || '',
-                wiek: c[4]?.v || '',
-                opisKrotki: c[5]?.v || '', // Kolumna F
-                opisFull: c[6]?.v || '',   // Kolumna G
+                typ: c[3]?.v || '',  // Kolumna D
+                wiek: c[4]?.v || '', // Kolumna E
+                opisK: c[5]?.v || '', // Kolumna F
+                opisF: c[6]?.v || '', // Kolumna G
                 zdjecia: pics
             };
         }).filter(x => x && x.zdjecia.length > 0);
         
-        setupCountryFilter();
+        populateFilters();
         renderGallery(allItems);
     };
 
-    // Budowanie listy krajów w filtrze
-    function setupCountryFilter() {
-        const countries = [...new Set(allItems.map(item => item.kraj))].sort();
-        const select = document.getElementById('country-filter');
-        countries.forEach(c => {
-            if(c) {
-                const opt = document.createElement('option');
-                opt.value = c;
-                opt.textContent = c;
-                select.appendChild(opt);
-            }
-        });
+    function populateFilters() {
+        const types = [...new Set(allItems.map(i => i.typ))].sort();
+        const countries = [...new Set(allItems.map(i => i.kraj))].sort();
+        const ages = [...new Set(allItems.map(i => i.wiek))].sort();
+
+        const fill = (id, data) => {
+            const el = document.getElementById(id);
+            data.forEach(val => {
+                if(val) el.innerHTML += `<option value="${val}">${val}</option>`;
+            });
+        };
+
+        fill('type-filter', types);
+        fill('country-filter', countries);
+        fill('age-filter', ages);
     }
 
-    // Funkcja filtrująca
     function filterData() {
-        const searchTerm = document.getElementById('search-bar').value.toLowerCase();
-        const countryTerm = document.getElementById('country-filter').value;
+        const s = document.getElementById('search-bar').value.toLowerCase();
+        const fType = document.getElementById('type-filter').value;
+        const fCountry = document.getElementById('country-filter').value;
+        const fAge = document.getElementById('age-filter').value;
 
-        const filtered = allItems.filter(item => {
-            const matchesSearch = item.nazwa.toLowerCase().includes(searchTerm) || 
-                                  item.kraj.toLowerCase().includes(searchTerm) || 
-                                  item.opisKrotki.toLowerCase().includes(searchTerm);
-            const matchesCountry = countryTerm === "" || item.kraj === countryTerm;
-            return matchesSearch && matchesCountry;
+        const filtered = allItems.filter(i => {
+            const matchS = i.nazwa.toLowerCase().includes(s) || i.opisK.toLowerCase().includes(s);
+            const matchT = !fType || i.typ === fType;
+            const matchC = !fCountry || i.kraj === fCountry;
+            const matchA = !fAge || i.wiek === fAge;
+            return matchS && matchT && matchC && matchA;
         });
         renderGallery(filtered);
     }
 
-    // Wyświetlanie kafelków
     function renderGallery(data) {
         const gal = document.getElementById('gallery');
-        if(data.length === 0) {
-            gal.innerHTML = "<p style='grid-column: 1/-1; text-align: center;'>Nie znaleziono przedmiotów spełniających kryteria.</p>";
-            return;
-        }
-        gal.innerHTML = data.map((item) => {
-            const originalIndex = allItems.indexOf(item);
+        gal.innerHTML = data.map(item => {
+            const idx = allItems.indexOf(item);
             return `
-            <div class="card" onclick="openModal(${originalIndex})">
+            <div class="card" onclick="openModal(${idx})">
+                <div class="type-badge">${item.typ}</div>
                 <img src="${getUrl(item.zdjecia[0], 'w600')}" loading="lazy">
                 <h3>${item.nazwa}</h3>
-                <div class="meta">${item.kraj} ${item.wiek ? '| ' + item.wiek : ''}</div>
-                <div class="short-desc">${item.opisKrotki}</div>
-            </div>
-        `}).join('');
+                <div class="meta">${item.kraj} | ${item.wiek}</div>
+                <div class="short-desc">${item.opisK}</div>
+            </div>`;
+        }).join('') || "<p style='grid-column:1/-1;text-align:center;'>Brak wyników.</p>";
     }
 
-    // Otwieranie Modala (szczegóły)
     window.openModal = function(i) {
         const item = allItems[i];
         currentPhotos = item.zdjecia;
-        let thumbnailsHtml = item.zdjecia.map((id, idx) => 
-            `<img src="${getUrl(id, 'w400')}" onclick="openLightbox(${idx}, event)" title="Kliknij aby powiększyć">`
+        let thumbs = item.zdjecia.map((id, idx) => 
+            `<img src="${getUrl(id, 'w400')}" onclick="openLightbox(${idx}, event)">`
         ).join('');
 
         document.getElementById('m-body').innerHTML = `
-            <div class="modal-gallery">${thumbnailsHtml}</div>
+            <div class="modal-gallery">${thumbs}</div>
+            <div class="type-badge" style="font-size:0.9rem">${item.typ}</div>
             <h2>${item.nazwa}</h2>
-            <p style="color: #b2945e; font-weight: bold; font-size: 1.1rem;">${item.kraj} | ${item.wiek}</p>
-            <div style="white-space:pre-wrap; line-height:1.7; color:#444; font-size: 1rem; margin-top: 15px;">${item.opisFull}</div>
+            <p style="color:#b2945e; font-weight:bold;">${item.kraj} | ${item.wiek}</p>
+            <div style="white-space:pre-wrap; line-height:1.7; margin-top:15px;">${item.opisF}</div>
         `;
         document.getElementById('modal-overlay').style.display = 'flex';
-        document.body.style.overflow = 'hidden'; // Blokada przewijania tła
+        document.body.style.overflow = 'hidden';
     };
 
-    // Otwieranie Lightboxa (duże zdjęcie)
     window.openLightbox = function(idx, e) {
-        if(e) e.stopPropagation();
+        e.stopPropagation();
         currentIdx = idx;
         document.getElementById('lightbox-img').src = getUrl(currentPhotos[currentIdx], 'w1600');
         document.getElementById('lightbox-overlay').style.display = 'flex';
     };
 
     window.move = function(step, e) {
-        if(e) e.stopPropagation();
+        e.stopPropagation();
         currentIdx = (currentIdx + step + currentPhotos.length) % currentPhotos.length;
         document.getElementById('lightbox-img').src = getUrl(currentPhotos[currentIdx], 'w1600');
     };
 
-    window.closeM = () => {
-        document.getElementById('modal-overlay').style.display = 'none';
-        document.body.style.overflow = 'auto';
-    };
+    window.closeM = () => { document.getElementById('modal-overlay').style.display = 'none'; document.body.style.overflow='auto'; };
     window.closeL = () => document.getElementById('lightbox-overlay').style.display = 'none';
 
-    // Ładowanie skryptu Google Sheets
     const s = document.createElement('script');
     s.src = "https://docs.google.com/spreadsheets/d/1EJYBKJowcGvMT8_Dh6bxnY0swD85dW1SO50_c9jTTa4/gviz/tq?tqx=responseHandler:handleData&gid=1129470117";
     document.body.appendChild(s);
