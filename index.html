@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Moja Kolekcja Broni</title>
+    <style>
+        body { margin: 0; padding: 0; background-color: #f5f5f0; font-family: 'Segoe UI', sans-serif; color: #33322e; }
+        header { display: flex; justify-content: center; align-items: center; height: 80px; border-bottom: 1px solid #d1d1ca; background: #f5f5f0; position: sticky; top: 0; z-index: 100; }
+        h1 { font-size: 1.6rem; font-weight: 400; text-transform: uppercase; letter-spacing: 4px; margin: 0; }
+        .filters { margin: 20px auto; max-width: 1400px; padding: 0 20px; display: flex; flex-wrap: wrap; gap: 15px; align-items: center; }
+        select, #search-input { padding: 10px; border: 1px solid #d1d1ca; border-radius: 4px; outline: none; background: white; }
+        #search-input { flex-grow: 1; min-width: 250px; }
+        .container { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 25px; padding: 20px; max-width: 1400px; margin: 0 auto; }
+        .card { background: white; border: 1px solid #e0e0d5; padding: 12px; transition: 0.3s; cursor: pointer; display: flex; flex-direction: column; }
+        .card:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.05); }
+        .image-box { width: 100%; height: 220px; background: #f9f9f9; overflow: hidden; margin-bottom: 10px; }
+        .image-box img { width: 100%; height: 100%; object-fit: cover; }
+        .meta { color: #b2945e; font-size: 0.75rem; text-transform: uppercase; font-weight: bold; margin-bottom: 5px; }
+        .title { font-weight: 600; font-size: 1.1rem; margin-bottom: 5px; }
+        .desc { font-size: 0.85rem; color: #666; line-height: 1.4; }
+
+        /* MODAL */
+        #modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); display: none; z-index: 2000; justify-content: center; align-items: center; padding: 20px; }
+        #modal-content { background: white; max-width: 1100px; width: 100%; max-height: 90vh; overflow-y: auto; position: relative; padding: 30px; border-radius: 4px; }
+        .close-btn { position: absolute; top: 15px; right: 20px; font-size: 2.5rem; cursor: pointer; border: none; background: none; }
+        .modal-gallery { display: flex; gap: 15px; overflow-x: auto; padding-bottom: 15px; margin-bottom: 20px; }
+        .modal-gallery img { height: 350px; border-radius: 4px; flex-shrink: 0; cursor: pointer; }
+        .modal-full-desc { line-height: 1.8; color: #444; white-space: pre-wrap; }
+    </style>
+</head>
+<body>
+
+<header><h1>Kolekcja Broni</h1></header>
+
+<div class="filters">
+    <select id="filter-kraj"><option value="">Wszystkie kraje</option></select>
+    <select id="filter-typ"><option value="">Wszystkie typy</option></select>
+    <select id="filter-wiek"><option value="">Wszystkie epoki</option></select>
+    <input type="text" id="search-input" placeholder="Szukaj nazwy lub opisu...">
+</div>
+
+<div class="container" id="gallery">
+    <p id="loading-status" style="grid-column: 1/-1; text-align: center;">Ładowanie kolekcji...</p>
+</div>
+
+<div id="modal-overlay" onclick="closeModal()">
+    <div id="modal-content" onclick="event.stopPropagation()">
+        <button class="close-btn" onclick="closeModal()">&times;</button>
+        <div id="modal-body"></div>
+    </div>
+</div>
+
+<script>
+    let allData = [];
+
+    window.handleData = function(response) {
+        document.getElementById('loading-status').style.display = 'none';
+        try {
+            const rows = response.table.rows;
+            allData = rows.map(row => {
+                const r = row.c;
+                if (!r || !r[1]) return null;
+
+                const galeria = [];
+                // Sprawdzamy kolumny H-V (indeksy 7-21) dla zdjęć G1-G15
+                for(let i=7; i<=21; i++) {
+                    if(r[i] && r[i].v) {
+                        let link = String(r[i].v);
+                        if(link.includes('id=')) {
+                            const id = link.split('id=')[1].split('&')[0];
+                            galeria.push(`https://drive.google.com/thumbnail?id=${id}&sz=w1000`);
+                        }
+                    }
+                }
+
+                return {
+                    nazwa: r[1] ? r[1].v : '',
+                    kraj: r[2] ? r[2].v : '',
+                    typ: r[3] ? r[3].v : '',
+                    wiek: r[4] ? r[4].v : '',
+                    opisKrotki: r[5] ? r[5].v : '',
+                    opisFull: r[6] ? r[6].v : '',
+                    fotoMain: galeria.length > 0 ? galeria[0] : 'https://via.placeholder.com/400x300?text=Brak+zdjęcia',
+                    zdjecia: galeria
+                };
+            }).filter(x => x !== null);
+
+            populateFilters(allData);
+            renderGallery(allData);
+        } catch (err) {
+            console.error("Błąd ładowania:", err);
+            document.getElementById('gallery').innerHTML = "Wystąpił błąd podczas pobierania danych.";
+        }
+    };
+
+    function renderGallery(items) {
+        const g = document.getElementById('gallery');
+        g.innerHTML = items.length ? '' : '<p>Brak wyników.</p>';
+        items.forEach((item, index) => {
+            const card = document.createElement('div');
+            card.className = 'card';
+            card.onclick = () => openModal(index);
+            card.innerHTML = `
+                <div class="image-box"><img src="${item.fotoMain}" loading="lazy"></div>
+                <p class="meta">${item.kraj} | ${item.wiek}</p>
+                <p class="title">${item.nazwa}</p>
+                <p class="desc">${item.opisKrotki}</p>
+            `;
+            g.appendChild(card);
+        });
+    }
+
+    window.openModal = function(index) {
+        const item = allData[index];
+        const body = document.getElementById('modal-body');
+        let imgsHtml = item.zdjecia.map(img => `<img src="${img}" onclick="window.open('${img}', '_blank')">`).join('');
+        
+        body.innerHTML = `
+            <div class="modal-gallery">${imgsHtml}</div>
+            <div class="modal-info">
+                <p class="meta">${item.kraj} | ${item.wiek} | ${item.typ}</p>
+                <h2 class="modal-title">${item.nazwa}</h2>
+                <div class="modal-full-desc">${item.opisFull}</div>
+            </div>
+        `;
+        document.getElementById('modal-overlay').style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+    };
+
+    window.closeModal = function() {
+        document.getElementById('modal-overlay').style.display = 'none';
+        document.body.style.overflow = 'auto';
+    };
+
+    function populateFilters(items) {
+        const cats = { 'kraj': 'filter-kraj', 'typ': 'filter-typ', 'wiek': 'filter-wiek' };
+        for (let key in cats) {
+            const sel = document.getElementById(cats[key]);
+            const vals = [...new Set(items.map(i => i[key]))].sort();
+            vals.forEach(v => { if(v) sel.innerHTML += `<option value="${v}">${v}</option>`; });
+        }
+    }
+
+    function applyFilters() {
+        const s = document.getElementById('search-input').value.toLowerCase();
+        const k = document.getElementById('filter-kraj').value;
+        const t = document.getElementById('filter-typ').value;
+        const w = document.getElementById('filter-wiek').value;
+        const filtered = allData.filter(i => {
+            const txt = (i.nazwa + i.opisKrotki + i.opisFull).toLowerCase();
+            return txt.includes(s) && (!k || i.kraj === k) && (!t || i.typ === t) && (!w || i.wiek === w);
+        });
+        renderGallery(filtered);
+    }
+
+    document.addEventListener('input', applyFilters);
+    document.addEventListener('change', applyFilters);
+
+    // ID Twojego arkusza "Kolekcja"
+    const sheetId = '1EJYBKJowcGvMT8_Dh6bxnY0swD85dW1SO50_c9jTTa4';
+    const script = document.createElement('script');
+    // Używamy GID 1129470117 zgodnie z Twoim linkiem
+    script.src = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=responseHandler:handleData&gid=1129470117`;
+    document.body.appendChild(script);
+</script>
+
+</body>
+</html>
