@@ -212,9 +212,9 @@
 
         document.getElementById('m-body').innerHTML = `
             <div class="modal-gallery">${thumbs}</div>
-            <div style="color:#888; font-size:0.75rem; text-transform:uppercase; letter-spacing:1px;">${item.typ}</div>
+           // <div style="color:#888; font-size:0.75rem; text-transform:uppercase; letter-spacing:1px;">${item.typ}</div>
             <h2 style="margin:10px 0;">${item.nazwa}</h2>
-            <p style="color:#b2945e; font-weight:bold; margin-bottom:20px;">${item.kraj} | ${item.wiek}</p>
+            <p style="color:#b2945e; font-weight:bold; margin-bottom:20px;">${item.kraj} | ${item.wiek} | ${item.typ}</p>
             <div style="white-space:pre-wrap; line-height:1.7; color:#444;">${item.opisF}</div>
         `;
         document.getElementById('modal-overlay').style.display = 'flex';
@@ -271,3 +271,4 @@
 </script>
 </body>
 </html>
+
