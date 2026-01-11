@@ -92,12 +92,28 @@
         .close-btn { position: absolute; top: 15px; right: 25px; font-size: 40px; cursor: pointer; color: #888; }
 
         /* Responsive */
-        @media (max-width: 800px) {
-            .tools { flex-direction: column; gap: 12px; }
-            .filter-select, #search-bar { width: 100%; font-size: 16px; }
-            .container { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); }
-            .nav { font-size: 40px; padding: 15px; }
-        }
+/* --- OPTYMALIZACJA MOBILE --- */
+@media (max-width: 800px) {
+    .tools { 
+        flex-direction: column; 
+        gap: 8px; /* Zmniejszony odstęp między polami */
+        padding: 5px 15px; 
+    }
+    
+    /* Zmniejszamy wysokość (padding) i czcionkę filtrów na mobile */
+    .filter-select, #search-bar { 
+        width: 100%; 
+        flex: 1 0 auto; 
+        font-size: 14px; /* Nieco mniejsza czcionka */
+        padding: 8px 10px; /* Zmniejszony padding (z 12px na 8px) */
+        height: 40px; /* Sztywna, optymalna wysokość dla kciuka */
+    }
+
+    .container { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; padding: 10px; }
+    #modal-content { padding: 15px; width: 95%; max-height: 95vh; }
+    .modal-gallery img { height: 80px; }
+    .nav { font-size: 40px; padding: 15px; }
+}
     </style>
 </head>
 <body>
@@ -293,3 +309,4 @@
 </script>
 </body>
 </html>
+
