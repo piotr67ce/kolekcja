@@ -76,7 +76,7 @@
             background: #000; 
             z-index: 2000; 
             overflow: hidden; 
-            touch-action: none; /* Blokuje scrollowanie strony podczas swipe */
+            touch-action: pan-y; /* Blokuje scrollowanie strony podczas swipe */
         }
 
         #lightbox-img { 
@@ -314,9 +314,14 @@ let allItems = [];
         let touchStartX = 0;
         let touchEndX = 0;
 
-        lbOverlay.addEventListener('touchstart', e => {
-            touchStartX = e.changedTouches[0].screenX;
-        }, {passive: true});
+lbOverlay.addEventListener('touchstart', e => {
+    // Jeśli użytkownik dotyka ekranu więcej niż jednym palcem (przybliża), przerwij swipe
+    if (e.touches.length > 1) {
+        touchStartX = 0; 
+        return;
+    }
+    touchStartX = e.changedTouches[0].screenX;
+}, {passive: true});
 
         lbOverlay.addEventListener('touchend', e => {
             touchEndX = e.changedTouches[0].screenX;
@@ -355,6 +360,7 @@ let allItems = [];
 </script>
 </body>
 </html>
+
 
 
 
