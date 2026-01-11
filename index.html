@@ -257,32 +257,51 @@
         }).join('') || "<p style='grid-column:1/-1;text-align:center;'>Brak wyników.</p>";
     }
 
-    window.openModal = function(i) {
-        const item = allItems[i];
-        currentPhotos = item.zdjecia;
-        let thumbs = item.zdjecia.map((id, idx) => 
-            `<img src="${getUrl(id, 'w400')}" onclick="openLightbox(${idx}, event)">`
-        ).join('');
+// Pomocnicza funkcja dobierająca rozmiar do urządzenia
+function getSmartSize() {
+    return window.innerWidth < 800 ? 'w1200' : 'w4000';
+}
 
-        document.getElementById('m-body').innerHTML = `
-            <div class="modal-gallery">${thumbs}</div>
+// Funkcja wstępnego ładowania (Preloading) - ładuje zdjęcie do pamięci podręcznej
+function preloadNext(idx) {
+    const nextIdx = (idx + 1) % currentPhotos.length;
+    const img = new Image();
+    img.src = getUrl(currentPhotos[nextIdx], getSmartSize());
+}
 
-            <h2 style="margin:10px 0;">${item.nazwa}</h2>
-            <p style="color:#b2945e; font-weight:bold; margin-bottom:20px;">${item.kraj} | ${item.wiek} | ${item.typ}</p>
-            <div style="white-space:pre-wrap; line-height:1.7; color:#444;">${item.opisF}</div>
-        `;
-        document.getElementById('modal-overlay').style.display = 'flex';
-        document.body.style.overflow = 'hidden';
-    };
+window.openLightbox = function(idx, e) {
+    if(e) e.stopPropagation();
+    currentIdx = idx;
+    
+    const img = document.getElementById('lightbox-img');
+    const overlay = document.getElementById('lightbox-overlay');
+    
+    img.classList.remove('zoomed');
+    
+    // Ustawiamy rozmiar zależny od ekranu
+    const size = getSmartSize();
+    img.src = getUrl(currentPhotos[currentIdx], size);
+    
+    overlay.style.display = 'flex';
+    
+    // Odpalenie precloadingu następnego zdjęcia po krótkiej chwili
+    preloadNext(currentIdx);
+};
 
-    window.openLightbox = function(idx, e) {
-        if(e) e.stopPropagation();
-        currentIdx = idx;
-        const img = document.getElementById('lightbox-img');
-        img.classList.remove('zoomed');
-        img.src = getUrl(currentPhotos[currentIdx], 'w4000');
-        document.getElementById('lightbox-overlay').style.display = 'flex';
-    };
+window.move = function(step, e) {
+    if(e) e.stopPropagation();
+    
+    currentIdx = (currentIdx + step + currentPhotos.length) % currentPhotos.length;
+    
+    const img = document.getElementById('lightbox-img');
+    img.classList.remove('zoomed');
+    
+    // Szybka podmiana na zdjęcie dopasowane do ekranu
+    img.src = getUrl(currentPhotos[currentIdx], getSmartSize());
+    
+    // Po zmianie zdjęcia, ładujemy w tle kolejne
+    preloadNext(currentIdx);
+};
 
     window.move = function(step, e) {
         if(e) e.stopPropagation();
@@ -325,6 +344,7 @@
 </script>
 </body>
 </html>
+
 
 
 
