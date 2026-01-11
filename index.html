@@ -85,6 +85,60 @@
         .close-btn { position: absolute; top: 15px; right: 25px; font-size: 40px; cursor: pointer; color: #888; }
         .lb-close { position: absolute; top: 20px; right: 30px; color: white; font-size: 50px; cursor: pointer; z-index: 2100; }
         .nav { position: absolute; color: white; font-size: 60px; cursor: pointer; padding: 30px; top: 50%; transform: translateY(-50%); user-select: none; z-index: 2100; }
+
+/* --- OPTYMALIZACJA MOBILE --- */
+@media (max-width: 800px) {
+    /* 1. Panel narzędzi - elementy jeden pod drugim */
+    .tools {
+        flex-direction: column;
+        gap: 12px;
+        padding: 10px 15px;
+        margin: 10px auto;
+    }
+
+    /* 2. Filtry i wyszukiwarka na pełną szerokość */
+    .filter-select, #search-bar {
+        flex: 1 0 auto;
+        width: 100%;
+        box-sizing: border-box; /* zapobiega wystawaniu poza ekran */
+        font-size: 16px; /* standard mobile - zapobiega auto-zoomowi w iOS */
+    }
+
+    /* 3. Galeria - mniejsze odstępy, żeby lepiej wykorzystać ekran */
+    .container {
+        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); /* Na małych ekranach mogą wejść 2 obok siebie */
+        gap: 12px;
+        padding: 10px;
+    }
+
+    /* 4. Karty - mniejszy padding i font */
+    .card {
+        padding: 10px;
+    }
+    
+    .card h3 {
+        font-size: 1rem;
+    }
+
+    /* 5. Modal (szczegóły) - prawie na cały ekran */
+    #modal-content {
+        padding: 15px;
+        width: 95%;
+        max-height: 95vh;
+        margin: 10px;
+    }
+
+    .modal-gallery img {
+        height: 80px; /* mniejsze miniaturki w galerii modala */
+    }
+
+    /* 6. Nawigacja w Lightboxie (strzałki) - większe i wyżej, by łatwiej trafić */
+    .nav {
+        font-size: 40px;
+        padding: 15px;
+    }
+}
+        
     </style>
 </head>
 <body>
@@ -271,6 +325,7 @@
 </script>
 </body>
 </html>
+
 
 
 
