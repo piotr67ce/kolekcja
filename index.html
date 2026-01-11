@@ -271,44 +271,53 @@ let allItems = [];
         document.getElementById('lightbox-overlay').style.display = 'none';
     };
 
-    // Zoom & Swipe logic
+   // --- Logika Zoom & Swipe ---
     const lbImg = document.getElementById('lightbox-img');
     const lbOverlay = document.getElementById('lightbox-overlay');
 
-    lbImg.addEventListener('click', function(e) {
-        e.stopPropagation();
-        this.classList.toggle('zoomed');
-        if (this.classList.contains('zoomed')) updateZoomOrigin(e);
-    });
+    if (lbImg && lbOverlay) {
+        // Kliknięcie w zdjęcie (Zoom)
+        lbImg.addEventListener('click', function(e) {
+            e.stopPropagation();
+            this.classList.toggle('zoomed');
+            if (this.classList.contains('zoomed')) updateZoomOrigin(e);
+        });
 
-    function updateZoomOrigin(e) {
-        if (lbImg.classList.contains('zoomed')) {
-            const x = (e.clientX / window.innerWidth) * 100;
-            const y = (e.clientY / window.innerHeight) * 100;
-            lbImg.style.transformOrigin = `${x}% ${y}%`;
-        }
+        // Obsługa Swipe (Dotyk)
+        let touchStartX = 0;
+        let touchEndX = 0;
+
+        lbOverlay.addEventListener('touchstart', e => {
+            touchStartX = e.changedTouches[0].screenX;
+        }, {passive: true});
+
+        lbOverlay.addEventListener('touchend', e => {
+            touchEndX = e.changedTouches[0].screenX;
+            
+            const swipeThreshold = 50;
+            const img = document.getElementById('lightbox-img');
+            
+            // Reaguj tylko jeśli nie ma zoomu
+            if (img && !img.classList.contains('zoomed')) {
+                if (touchEndX < touchStartX - swipeThreshold) {
+                    window.move(1); // Swipe w lewo -> Następne
+                } else if (touchEndX > touchStartX + swipeThreshold) {
+                    window.move(-1); // Swipe w prawo -> Poprzednie
+                }
+            }
+        }, {passive: true});
+
+        // Podążanie zoomu za myszką (na kompie)
+        lbOverlay.addEventListener('mousemove', updateZoomOrigin);
     }
 
-    lbOverlay.addEventListener('mousemove', updateZoomOrigin);
-
-    // --- SWIPE ---
-    let touchStartX = 0;
-    let touchEndX = 0;
-
-    lbOverlay.addEventListener('touchstart', e => {
-        touchStartX = e.changedTouches[0].screenX;
-    }, {passive: true});
-
-    lbOverlay.addEventListener('touchend', e => {
-        touchEndX = e.changedTouches[0].screenX;
-        handleSwipe();
-    }, {passive: true});
-
-    function handleSwipe() {
-        const swipeThreshold = 50;
-        if (lbImg.classList.contains('zoomed')) return;
-        if (touchEndX < touchStartX - swipeThreshold) move(1);
-        if (touchEndX > touchStartX + swipeThreshold) move(-1);
+    function updateZoomOrigin(e) {
+        const img = document.getElementById('lightbox-img');
+        if (img && img.classList.contains('zoomed')) {
+            const x = (e.clientX / window.innerWidth) * 100;
+            const y = (e.clientY / window.innerHeight) * 100;
+            img.style.transformOrigin = `${x}% ${y}%`;
+        }
     }
 
     // Google Sheets Data
@@ -319,5 +328,6 @@ let allItems = [];
 </script>
 </body>
 </html>
+
 
 
