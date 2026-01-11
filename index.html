@@ -70,21 +70,48 @@
         
         .modal-gallery { display: flex; gap: 12px; overflow-x: auto; padding-bottom: 15px; margin-bottom: 20px; border-bottom: 1px solid #eee; }
         .modal-gallery img { height: 120px; cursor: pointer; border: 2px solid #ddd; border-radius: 4px; }
-        
-        #lightbox-overlay { background: #000; z-index: 2000; overflow: hidden; }
+
+
+#lightbox-overlay { 
+            background: #000; 
+            z-index: 2000; 
+            overflow: hidden; 
+            touch-action: none; /* Blokuje scrollowanie strony podczas swipe */
+        }
+
         #lightbox-img { 
             max-width: 95%; max-height: 95%; 
             object-fit: contain; 
             transition: transform 0.3s ease; 
             cursor: zoom-in;
             transform-origin: center;
+            pointer-events: none; /* Kluczowe: dotyk "przelatuje" do tła obsługującego swipe */
+            z-index: 2050;
         }
-        #lightbox-img.zoomed { transform: scale(2.5); cursor: zoom-out; }
-        #lightbox-img.zoomed ~ .nav { opacity: 0; pointer-events: none; }
+
+        #lightbox-img.zoomed { transform: scale(2.5); cursor: zoom-out; pointer-events: auto; }
+
+  
+    #lightbox-img.zoomed ~ .nav { 
+    opacity: 0; 
+    pointer-events: none; 
+    visibility: hidden; /* Dodatkowe zabezpieczenie */
+}
 
         .close-btn { position: absolute; top: 15px; right: 25px; font-size: 40px; cursor: pointer; color: #888; }
         .lb-close { position: absolute; top: 20px; right: 30px; color: white; font-size: 50px; cursor: pointer; z-index: 2100; }
-        .nav { position: absolute; color: white; font-size: 60px; cursor: pointer; padding: 30px; top: 50%; transform: translateY(-50%); user-select: none; z-index: 2100; }
+      .nav { 
+            position: absolute; 
+            color: white; 
+            font-size: 60px; 
+            cursor: pointer; 
+            padding: 30px; 
+            top: 50%; 
+            transform: translateY(-50%); 
+            user-select: none; 
+            z-index: 2200; /* Strzałki muszą być na samej górze */
+            pointer-events: auto; /* Strzałki muszą reagować na klik */
+        }
 
         /* --- OPTYMALIZACJA MOBILE --- */
         @media (max-width: 800px) {
@@ -328,6 +355,7 @@ let allItems = [];
 </script>
 </body>
 </html>
+
 
 
 
