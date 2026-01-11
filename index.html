@@ -85,6 +85,16 @@
         .close-btn { position: absolute; top: 15px; right: 25px; font-size: 40px; cursor: pointer; color: #888; }
         .lb-close { position: absolute; top: 20px; right: 30px; color: white; font-size: 50px; cursor: pointer; z-index: 2100; }
         .nav { position: absolute; color: white; font-size: 60px; cursor: pointer; padding: 30px; top: 50%; transform: translateY(-50%); user-select: none; z-index: 2100; }
+
+        /* --- OPTYMALIZACJA MOBILE --- */
+        @media (max-width: 800px) {
+            .tools { flex-direction: column; gap: 12px; padding: 10px 15px; }
+            .filter-select, #search-bar { width: 100%; flex: 1 0 auto; font-size: 16px; }
+            .container { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; padding: 10px; }
+            #modal-content { padding: 15px; width: 95%; max-height: 95vh; }
+            .modal-gallery img { height: 80px; }
+            .nav { font-size: 40px; padding: 15px; }
+        }
     </style>
 </head>
 <body>
@@ -129,6 +139,18 @@
     function getUrl(id, size = 'w800') {
         if (!id) return '';
         return `https://drive.google.com/thumbnail?id=${id.toString().trim()}&sz=${size}`;
+    }
+
+    // Stabilna funkcja doboru rozmiaru
+    function getSmartSize() {
+        return window.innerWidth < 800 ? 'w1200' : 'w4000';
+    }
+
+    // Preloading następnego zdjęcia
+    function preloadNext(idx) {
+        const nextIdx = (idx + 1) % currentPhotos.length;
+        const img = new Image();
+        img.src = getUrl(currentPhotos[nextIdx], getSmartSize());
     }
 
     window.handleData = function(resp) {
@@ -212,7 +234,6 @@
 
         document.getElementById('m-body').innerHTML = `
             <div class="modal-gallery">${thumbs}</div>
-
             <h2 style="margin:10px 0;">${item.nazwa}</h2>
             <p style="color:#b2945e; font-weight:bold; margin-bottom:20px;">${item.kraj} | ${item.wiek} | ${item.typ}</p>
             <div style="white-space:pre-wrap; line-height:1.7; color:#444;">${item.opisF}</div>
@@ -226,15 +247,18 @@
         currentIdx = idx;
         const img = document.getElementById('lightbox-img');
         img.classList.remove('zoomed');
-        img.src = getUrl(currentPhotos[currentIdx], 'w4000');
+        img.src = getUrl(currentPhotos[currentIdx], getSmartSize());
         document.getElementById('lightbox-overlay').style.display = 'flex';
+        preloadNext(currentIdx);
     };
 
     window.move = function(step, e) {
         if(e) e.stopPropagation();
         currentIdx = (currentIdx + step + currentPhotos.length) % currentPhotos.length;
-        document.getElementById('lightbox-img').classList.remove('zoomed');
-        document.getElementById('lightbox-img').src = getUrl(currentPhotos[currentIdx], 'w4000');
+        const img = document.getElementById('lightbox-img');
+        img.classList.remove('zoomed');
+        img.src = getUrl(currentPhotos[currentIdx], getSmartSize());
+        preloadNext(currentIdx);
     };
 
     window.closeM = () => { document.getElementById('modal-overlay').style.display = 'none'; document.body.style.overflow='auto'; };
@@ -251,26 +275,4 @@
 
     lbImg.addEventListener('click', function(e) {
         e.stopPropagation();
-        this.classList.toggle('zoomed');
-        if (this.classList.contains('zoomed')) updateZoomOrigin(e);
-    });
-
-    function updateZoomOrigin(e) {
-        if (lbImg.classList.contains('zoomed')) {
-            const x = (e.clientX / window.innerWidth) * 100;
-            const y = (e.clientY / window.innerHeight) * 100;
-            lbImg.style.transformOrigin = `${x}% ${y}%`;
-        }
-    }
-
-    lbOverlay.addEventListener('mousemove', updateZoomOrigin);
-
-    const s = document.createElement('script');
-    s.src = "https://docs.google.com/spreadsheets/d/1EJYBKJowcGvMT8_Dh6bxnY0swD85dW1SO50_c9jTTa4/gviz/tq?tqx=responseHandler:handleData&gid=1129470117";
-    document.body.appendChild(s);
-</script>
-</body>
-</html>
-
-
-
+        this.
