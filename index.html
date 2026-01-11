@@ -292,7 +292,41 @@
     const s = document.createElement('script');
     s.src = "https://docs.google.com/spreadsheets/d/1EJYBKJowcGvMT8_Dh6bxnY0swD85dW1SO50_c9jTTa4/gviz/tq?tqx=responseHandler:handleData&gid=1129470117";
     document.body.appendChild(s);
+
+// --- OBSŁUGA SWIPE DLA LIGHTBOXA ---
+let touchStartX = 0;
+let touchEndX = 0;
+
+const lbOverlay = document.getElementById('lightbox-overlay');
+
+lbOverlay.addEventListener('touchstart', e => {
+    touchStartX = e.changedTouches[0].screenX;
+}, {passive: true});
+
+lbOverlay.addEventListener('touchend', e => {
+    touchEndX = e.changedTouches[0].screenX;
+    handleSwipe();
+}, {passive: true});
+
+function handleSwipe() {
+    const swipeThreshold = 50; // czułość: ile pikseli trzeba przesunąć, by zadziałało
+    
+    // Nie zmieniaj zdjęcia, jeśli jest włączony zoom
+    const img = document.getElementById('lightbox-img');
+    if (img.classList.contains('zoomed')) return;
+
+    if (touchEndX < touchStartX - swipeThreshold) {
+        // Przesunięcie w lewo -> Następne zdjęcie
+        move(1);
+    }
+    if (touchEndX > touchStartX + swipeThreshold) {
+        // Przesunięcie w prawo -> Poprzednie zdjęcie
+        move(-1);
+    }
+}
+
 </script>
 </body>
 </html>
+
 
