@@ -275,4 +275,23 @@
 
     lbImg.addEventListener('click', function(e) {
         e.stopPropagation();
-        this.
+        this.classList.toggle('zoomed');
+        if (this.classList.contains('zoomed')) updateZoomOrigin(e);
+    });
+
+    function updateZoomOrigin(e) {
+        if (lbImg.classList.contains('zoomed')) {
+            const x = (e.clientX / window.innerWidth) * 100;
+            const y = (e.clientY / window.innerHeight) * 100;
+            lbImg.style.transformOrigin = `${x}% ${y}%`;
+        }
+    }
+
+    lbOverlay.addEventListener('mousemove', updateZoomOrigin);
+
+    const s = document.createElement('script');
+    s.src = "https://docs.google.com/spreadsheets/d/1EJYBKJowcGvMT8_Dh6bxnY0swD85dW1SO50_c9jTTa4/gviz/tq?tqx=responseHandler:handleData&gid=1129470117";
+    document.body.appendChild(s);
+</script>
+</body>
+</html>
