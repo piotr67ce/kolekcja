@@ -33,24 +33,32 @@
 
         #lightbox-overlay { 
             background: #000; z-index: 2000; overflow: hidden; 
-            touch-action: pan-y; /* Pozwala na systemowy zoom (pinch) */
+            /* Pozwalamy na natywny pinch-zoom i przesuwanie */
+            touch-action: manipulation; 
         }
+        
         #lightbox-img { 
             max-width: 95%; max-height: 95%; object-fit: contain; 
-            transition: transform 0.3s ease, opacity 0.3s ease;
-            z-index: 2050; display: block; will-change: transform;
+            /* Ważne: transition tylko dla opacity, transform obsługujemy ręcznie przy dragu */
+            transition: opacity 0.3s ease; 
+            z-index: 2050; display: block; will-change: transform; cursor: zoom-in;
+            /* Zapobiega systemowemu przeciąganiu obrazka (ghost image) */
+            user-select: none; -webkit-user-drag: none;
         }
-        #lightbox-img.zoomed { transform: scale(2.5); cursor: zoom-out; }
+        
+        #lightbox-img.zoomed { cursor: grab; }
+        #lightbox-img.zoomed:active { cursor: grabbing; }
 
-        .lb-close { position: absolute; top: 15px; right: 25px; color: white; font-size: 50px; cursor: pointer; z-index: 2300; }
-        .nav { position: absolute; color: white; font-size: 60px; cursor: pointer; padding: 30px; top: 50%; transform: translateY(-50%); z-index: 2200; user-select: none; }
+        .lb-close { position: absolute; top: 15px; right: 25px; color: white; font-size: 50px; cursor: pointer; z-index: 2300; text-shadow: 0 0 5px #000; }
+        .nav { position: absolute; color: white; font-size: 60px; cursor: pointer; padding: 30px; top: 50%; transform: translateY(-50%); z-index: 2200; user-select: none; text-shadow: 0 0 5px #000; }
         
         #lb-pagination { position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%); display: flex; gap: 12px; z-index: 2300; }
-        .dot { width: 10px; height: 10px; background: rgba(255,255,255,0.3); border-radius: 50%; transition: 0.3s; }
+        .dot { width: 10px; height: 10px; background: rgba(255,255,255,0.4); border-radius: 50%; transition: 0.3s; }
         .dot.active { background: white; transform: scale(1.4); }
 
         /* Ukrywanie nawigacji przy zoomie */
-        #lightbox-img.zoomed ~ .nav, #lightbox-img.zoomed ~ #lb-pagination { display: none; }
+        #lightbox-overlay.is-zoomed .nav, 
+        #lightbox-overlay.is-zoomed #lb-pagination { display: none; }
 
         .close-btn { position: absolute; top: 15px; right: 25px; font-size: 40px; cursor: pointer; color: #888; }
 
@@ -84,7 +92,7 @@
 <div id="lightbox-overlay" onclick="closeL()">
     <span class="lb-close" onclick="closeL()">&times;</span>
     <div class="nav" style="left:10px" onclick="move(-1, event)">&#10094;</div>
-    <img id="lightbox-img" src="" alt="Powiększenie" onclick="handleImgClick(event)">
+    <img id="lightbox-img" src="" alt="Powiększenie" onclick="toggleZoom(event)">
     <div class="nav" style="right:10px" onclick="move(1, event)">&#10095;</div>
     <div id="lb-pagination"></div>
 </div>
@@ -161,18 +169,17 @@
 
     window.move = (step, e) => {
         if(e) e.stopPropagation();
-        if (lbImg.classList.contains('zoomed')) return;
+        if (lbOverlay.classList.contains('is-zoomed')) return;
         currentIdx = (currentIdx + step + currentPhotos.length) % currentPhotos.length;
         updateLightboxImg();
     };
 
     function updateLightboxImg() {
         const img = document.getElementById('lightbox-img');
-        img.classList.remove('zoomed');
+        resetZoomState(); // Zawsze resetuj zoom przy zmianie zdjęcia
         img.style.opacity = '0';
         setTimeout(() => {
             img.src = getUrl(currentPhotos[currentIdx], getSmartSize());
-            img.style.transform = 'translateX(0) scale(1)';
             img.style.opacity = '1';
             updatePagination();
         }, 150);
@@ -189,66 +196,102 @@
     }
 
     window.closeM = () => { document.getElementById('modal-overlay').style.display = 'none'; document.body.style.overflow='auto'; };
-    window.closeL = () => { document.getElementById('lightbox-img').classList.remove('zoomed'); document.getElementById('lightbox-overlay').style.display = 'none'; };
+    window.closeL = () => { resetZoomState(); document.getElementById('lightbox-overlay').style.display = 'none'; };
 
-    // --- LOGIKA DOTYKU I ZOOM ---
+    // --- NOWA, CZYSTA LOGIKA ZOOM I SWIPE ---
     const lbImg = document.getElementById('lightbox-img');
     const lbOverlay = document.getElementById('lightbox-overlay');
-    let startX = 0;
-    let isMoving = false;
+    
+    // Zmienne stanu
+    let isZoomed = false;
+    let startX = 0, startY = 0;
+    let currentTranslateX = 0, currentTranslateY = 0;
+    let isDragging = false;
 
-    function handleImgClick(e) {
-        e.stopPropagation();
-        if (lbImg.classList.contains('zoomed')) {
-            lbImg.classList.remove('zoomed');
-            lbImg.style.transform = 'translateX(0) scale(1)';
+    // 1. Funkcja Resetująca (używana przy zamykaniu/zmianie)
+    function resetZoomState() {
+        isZoomed = false;
+        isDragging = false;
+        currentTranslateX = 0; 
+        currentTranslateY = 0;
+        lbOverlay.classList.remove('is-zoomed');
+        lbImg.classList.remove('zoomed');
+        lbImg.style.transform = `translate(0px, 0px) scale(1)`;
+        lbImg.style.transformOrigin = 'center center';
+    }
+
+    // 2. Kliknięcie w obrazek (Zoom Toggle)
+    window.toggleZoom = function(e) {
+        e.stopPropagation(); // Ważne: nie zamykaj overlayu
+        if (isZoomed) {
+            resetZoomState();
         } else {
+            isZoomed = true;
+            lbOverlay.classList.add('is-zoomed');
             lbImg.classList.add('zoomed');
-            updateZoomPos(e);
+            lbImg.style.transform = `translate(0px, 0px) scale(2.5)`;
         }
-    }
+    };
 
-    function updateZoomPos(e) {
-        if (!lbImg.classList.contains('zoomed')) return;
-        const rect = lbImg.getBoundingClientRect();
-        const clientX = e.clientX || (e.touches ? e.touches[0].clientX : 0);
-        const clientY = e.clientY || (e.touches ? e.touches[0].clientY : 0);
-        const x = ((clientX - rect.left) / rect.width) * 100;
-        const y = ((clientY - rect.top) / rect.height) * 100;
-        lbImg.style.transformOrigin = `${x}% ${y}%`;
-    }
-
+    // 3. Obsługa Dotyku (Telefon)
     lbOverlay.addEventListener('touchstart', e => {
-        if (lbImg.classList.contains('zoomed')) {
-            updateZoomPos(e); // Pozwala przesuwać zoom palcem
-            return;
-        }
-        if (e.touches.length > 1) return;
+        if (e.touches.length > 1) return; // Ignoruj pinch-zoom systemowy
+        isDragging = true;
         startX = e.touches[0].clientX;
-        isMoving = true;
-        lbImg.style.transition = 'none';
-    }, {passive: true});
+        startY = e.touches[0].clientY;
+        lbImg.style.transition = 'none'; // Wyłączamy animację na czas ruchu
+    }, {passive: false}); // passive: false pozwala na preventDefault
 
     lbOverlay.addEventListener('touchmove', e => {
-        if (lbImg.classList.contains('zoomed')) {
-            updateZoomPos(e);
-            return;
+        if (!isDragging) return;
+
+        if (isZoomed) {
+            // TRYB ZOOM: Przesuwanie (Pan)
+            e.preventDefault(); // Blokuj przewijanie strony
+            const deltaX = e.touches[0].clientX - startX;
+            const deltaY = e.touches[0].clientY - startY;
+            lbImg.style.transform = `translate(${currentTranslateX + deltaX}px, ${currentTranslateY + deltaY}px) scale(2.5)`;
+        } else {
+            // TRYB NORMALNY: Swipe (Tylko lewo/prawo)
+            const deltaX = e.touches[0].clientX - startX;
+            lbImg.style.transform = `translate(${deltaX}px, 0px) scale(1)`;
         }
-        if (!isMoving) return;
-        let diffX = e.touches[0].clientX - startX;
-        lbImg.style.transform = `translateX(${diffX}px)`;
-    }, {passive: true});
+    }, {passive: false});
 
     lbOverlay.addEventListener('touchend', e => {
-        if (!isMoving || lbImg.classList.contains('zoomed')) return;
-        isMoving = false;
+        if (!isDragging) return;
+        isDragging = false;
         lbImg.style.transition = 'transform 0.3s ease, opacity 0.3s ease';
-        let diffX = e.changedTouches[0].clientX - startX;
-        if (Math.abs(diffX) > 80) window.move(diffX > 0 ? -1 : 1);
-        else lbImg.style.transform = 'translateX(0)';
-    }, {passive: true});
 
-    // Obsługa klawiatury
+        if (isZoomed) {
+            // Zapisz nową pozycję przesunięcia
+            const deltaX = e.changedTouches[0].clientX - startX;
+            const deltaY = e.changedTouches[0].clientY - startY;
+            currentTranslateX += deltaX;
+            currentTranslateY += deltaY;
+            // Tutaj po prostu zostawiamy obrazek tam gdzie jest
+            lbImg.style.transform = `translate(${currentTranslateX}px, ${currentTranslateY}px) scale(2.5)`;
+        } else {
+            // Logika Swipe (zmiana zdjęcia)
+            const deltaX = e.changedTouches[0].clientX - startX;
+            if (Math.abs(deltaX) > 80) {
+                window.move(deltaX > 0 ? -1 : 1);
+            } else {
+                lbImg.style.transform = `translate(0px, 0px) scale(1)`; // Powrót
+            }
+        }
+    });
+
+    // 4. Obsługa Myszki (Komputer) - Tylko "Lens Effect" (bez przesuwania)
+    lbImg.addEventListener('mousemove', e => {
+        if (!isZoomed || window.innerWidth < 800) return; // Tylko na kompie i tylko gdy zoom
+        const rect = lbImg.getBoundingClientRect();
+        const x = ((e.clientX - rect.left) / rect.width) * 100;
+        const y = ((e.clientY - rect.top) / rect.height) * 100;
+        lbImg.style.transformOrigin = `${x}% ${y}%`;
+    });
+
+    // Klawiatura
     window.addEventListener('keydown', e => {
         if (document.getElementById('lightbox-overlay').style.display === 'flex') {
             if (e.key === 'ArrowLeft') window.move(-1);
