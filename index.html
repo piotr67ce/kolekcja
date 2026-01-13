@@ -14,9 +14,10 @@
 
         body { margin: 0; background-color: var(--bg-color); font-family: 'Segoe UI', sans-serif; color: var(--text-color); }
         
+        /* --- NAGŁÓWEK (Poprawiona symetria linii) --- */
         header { 
             background: var(--bg-color); 
-            padding: 20px 0 0 0; 
+            padding: 20px 0 0 0; /* Usunięty dolny padding dla precyzji */
             text-align: center; 
             border-bottom: 1px solid var(--border-color); 
             position: sticky; top: 0; z-index: 100; 
@@ -25,7 +26,9 @@
         h1 { color: #33322e; font-size: 1.8rem; font-weight: 400; text-transform: uppercase; letter-spacing: 4px; margin: 0; }
 
         .tools { 
-            max-width: 1400px; margin: 15px auto; padding: 0 10px; 
+            max-width: 1400px; 
+            margin: 15px auto; /* Symetryczny odstęp 15px od góry i dołu (linii) */
+            padding: 0 10px; 
             display: flex; gap: 20px; align-items: center; flex-wrap: wrap; justify-content: center;
         }
 
@@ -50,6 +53,7 @@
         .card .meta { color: var(--accent-color); font-weight: bold; font-size: 0.85rem; margin-bottom: 10px; }
         .card .short-desc { color: #666; font-size: 0.85rem; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
 
+        /* --- OKNA (MODAL & LIGHTBOX) --- */
         #modal-overlay, #lightbox-overlay { 
             position: fixed; inset: 0; display: none; 
             justify-content: center; align-items: center; padding: 0; 
@@ -64,10 +68,10 @@
         .modal-gallery { display: flex; gap: 12px; overflow-x: auto; padding-bottom: 15px; margin-bottom: 20px; border-bottom: 1px solid #eee; }
         .modal-gallery img { height: 120px; cursor: pointer; border: 2px solid #ddd; border-radius: 4px; }
 
-        /* --- POPRAWKA CSS DLA LIGHTBOXA --- */
+        /* LIGHTBOX - Kluczowe ustawienia dotyku */
         #lightbox-overlay { 
             background: #000; z-index: 2000; overflow: hidden; 
-            /* To pozwala przeglądarce na zoomowanie całego kontenera */
+            /* Pozwala na systemowy Pinch-Zoom (dwa palce) */
             touch-action: pinch-zoom; 
         }
 
@@ -233,12 +237,13 @@
     window.closeM = () => { document.getElementById('modal-overlay').style.display = 'none'; document.body.style.overflow='auto'; };
     window.closeL = () => { resetZoom(); document.getElementById('lightbox-overlay').style.display = 'none'; };
 
-    // --- NAPRAWIONY ZOOM I SWIPE ---
+    // --- LOGIKA DOTYKU (SWIPE + ZOOM) ---
     const lbImg = document.getElementById('lightbox-img');
     const lbOverlay = document.getElementById('lightbox-overlay');
     let startX = 0;
     let isMoving = false;
 
+    // Funkcja Zoom 2.5x na kliknięcie
     function toggleZoom(e) {
         e.stopPropagation();
         if (lbImg.classList.contains('zoomed')) {
@@ -246,11 +251,12 @@
         } else {
             lbImg.classList.add('zoomed');
             lbOverlay.classList.add('is-zoomed');
-            const rect = lbImg.getBoundingClientRect();
-            // Obsługa zarówno myszy jak i dotyku
+            
+            // Pobranie koordynatów dla myszki lub dotyku
             const clientX = e.touches ? e.touches[0].clientX : e.clientX;
             const clientY = e.touches ? e.touches[0].clientY : e.clientY;
             
+            const rect = lbImg.getBoundingClientRect();
             const x = ((clientX - rect.left) / rect.width) * 100;
             const y = ((clientY - rect.top) / rect.height) * 100;
             
@@ -265,21 +271,25 @@
         lbImg.style.transform = 'translateX(0) scale(1)';
     }
 
-    // WAŻNE: Obsługa dotyku z wykrywaniem "uszczypnięcia"
+    // --- START LOGIKI SWIPE Z ZABEZPIECZENIEM DLA PINCH-ZOOM ---
+    
     lbOverlay.addEventListener('touchstart', e => {
-        // JEŚLI WYKRYTO WIĘCEJ NIŻ 1 PALEC (np. USZCZYPNIĘCIE) - PRZERWIJ SKRYPT
+        // ZABEZPIECZENIE: Jeśli user kładzie więcej niż 1 palec, to chce systemowy Zoom.
+        // Wtedy przerywamy naszą funkcję i oddajemy kontrolę przeglądarce.
         if (e.touches.length > 1) return;
 
+        // Jeśli obraz jest powiększony (zoom 2.5x), też nie przesuwamy.
         if (lbImg.classList.contains('zoomed')) return;
+
         startX = e.touches[0].clientX;
         isMoving = true;
-        lbImg.style.transition = 'none';
+        lbImg.style.transition = 'none'; // Wyłączamy animację na czas przesuwania palcem
     }, {passive: false});
 
     lbOverlay.addEventListener('touchmove', e => {
-        // JEŚLI WIĘCEJ NIŻ 1 PALEC LUB ZOOM JEST AKTYWNY - NIE PRZESUWAJ SWIPEM
         if (e.touches.length > 1 || !isMoving || lbImg.classList.contains('zoomed')) return;
         
+        // Śledzenie palca (Swipe)
         let diffX = e.touches[0].clientX - startX;
         lbImg.style.transform = `translateX(${diffX}px)`;
     }, {passive: true});
@@ -287,17 +297,19 @@
     lbOverlay.addEventListener('touchend', e => {
         if (!isMoving || lbImg.classList.contains('zoomed')) return;
         isMoving = false;
-        lbImg.style.transition = 'transform 0.3s ease, opacity 0.3s ease';
+        lbImg.style.transition = 'transform 0.3s ease, opacity 0.3s ease'; // Przywracamy animację
         
         let diffX = e.changedTouches[0].clientX - startX;
+        // Jeśli przesunięcie było większe niż 80px, zmień zdjęcie
         if (Math.abs(diffX) > 80) {
             window.move(diffX > 0 ? -1 : 1);
         } else {
+            // Jeśli za małe, wróć na środek
             lbImg.style.transform = 'translateX(0)';
         }
     }, {passive: true});
 
-    // Klawiatura
+    // Klawiatura (Strzałki i ESC)
     window.addEventListener('keydown', e => {
         if (document.getElementById('lightbox-overlay').style.display === 'flex') {
             if (e.key === 'ArrowLeft') window.move(-1);
@@ -306,6 +318,7 @@
         }
     });
 
+    // Pobieranie danych z Google Sheets
     const s = document.createElement('script');
     s.src = "https://docs.google.com/spreadsheets/d/1EJYBKJowcGvMT8_Dh6bxnY0swD85dW1SO50_c9jTTa4/gviz/tq?tqx=responseHandler:handleData&gid=1129470117";
     document.body.appendChild(s);
