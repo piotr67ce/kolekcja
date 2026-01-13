@@ -3,111 +3,117 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>Moja Kolekcja Broni</title>
-    <style>
-        :root {
-            --bg-color: #f5f5f0;
-            --text-color: #333;
-            --accent-color: #b2945e;
-            --border-color: #d1d1ca;
-        }
+    <title>Moja Kolekcja Broni</title><style>
+    :root {
+        --bg-color: #f5f5f0;
+        --text-color: #333;
+        --accent-color: #b2945e;
+        --border-color: #d1d1ca;
+    }
 
-        body { margin: 0; background-color: var(--bg-color); font-family: 'Segoe UI', sans-serif; color: var(--text-color); }
+    body { margin: 0; background-color: var(--bg-color); font-family: 'Segoe UI', sans-serif; color: var(--text-color); }
+    
+    header { 
+        background: var(--bg-color); 
+        padding: 20px 0 0 0; 
+        text-align: center; 
+        border-bottom: 1px solid var(--border-color); 
+        position: sticky; top: 0; z-index: 100; 
+    }
+
+    h1 { color: #33322e; font-size: 1.8rem; font-weight: 400; text-transform: uppercase; letter-spacing: 4px; margin: 0; }
+
+    .tools { 
+        max-width: 1400px; 
+        margin: 15px auto; 
+        padding: 0 10px; 
+        display: flex; gap: 10px; /* Zmniejszony odstęp dla lepszego pasowania na mobile */
+        align-items: center; flex-wrap: wrap; justify-content: center;
+    }
+
+    .filter-select, #search-bar { 
+        padding: 12px; border: 1px solid #ccc; border-radius: 8px; 
+        font-size: 0.9rem; outline: none; background: white;
+        box-sizing: border-box;
+    }
+    
+    /* Domyślnie dla komputerów */
+    .filter-select { flex: 0 0 160px; }
+    #search-bar { flex: 1 1 200px; }
+
+    .container { 
+        display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); 
+        gap: 25px; padding: 20px; max-width: 1400px; margin: 0 auto; 
+    }
+
+    .card { 
+        background: white; border: 1px solid #ddd; padding: 15px; 
+        cursor: pointer; transition: 0.3s; display: flex; flex-direction: column; border-radius: 8px; 
+    }
+    .card img { width: 100%; height: 200px; object-fit: cover; border-radius: 4px; background: #eee; }
+    .card h3 { margin: 15px 0 5px 0; font-size: 1.1rem; }
+    .card .meta { color: var(--accent-color); font-weight: bold; font-size: 0.85rem; margin-bottom: 10px; }
+    .card .short-desc { color: #666; font-size: 0.85rem; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+
+    #modal-overlay, #lightbox-overlay { 
+        position: fixed; inset: 0; display: none; 
+        justify-content: center; align-items: center; padding: 0; 
+    }
+    
+    #modal-overlay { background: rgba(0,0,0,0.85); z-index: 1000; padding: 20px; }
+    #modal-content { 
+        background: white; width: 100%; max-width: 900px; max-height: 90vh; 
+        overflow-y: auto; padding: 30px; position: relative; border-radius: 12px; 
+    }
+
+    .modal-gallery { display: flex; gap: 12px; overflow-x: auto; padding-bottom: 15px; margin-bottom: 20px; border-bottom: 1px solid #eee; }
+    .modal-gallery img { height: 120px; cursor: pointer; border: 2px solid #ddd; border-radius: 4px; }
+
+    #lightbox-overlay { 
+        background: #000; z-index: 2000; overflow: hidden; 
+        touch-action: pinch-zoom; 
+    }
+
+    #lightbox-img { 
+        max-width: 100%; max-height: 100%; object-fit: contain; 
+        transition: transform 0.3s ease, opacity 0.3s ease;
+        z-index: 2050; display: block; will-change: transform;
+    }
+    #lightbox-img.zoomed { cursor: zoom-out; }
+
+    .lb-close { position: absolute; top: 10px; right: 20px; color: white; font-size: 40px; cursor: pointer; z-index: 2300; text-shadow: 0 0 10px #000; }
+    
+    .nav { 
+        position: absolute; color: white; font-size: 50px; cursor: pointer; 
+        padding: 20px; top: 50%; transform: translateY(-50%); 
+        user-select: none; z-index: 2200; text-shadow: 0 0 15px #000;
+    }
+    
+    #lb-pagination {
+        position: absolute; bottom: 20px; left: 50%;
+        transform: translateX(-50%); display: flex; gap: 10px; z-index: 2300;
+    }
+    .dot { width: 8px; height: 8px; background: rgba(255,255,255,0.4); border-radius: 50%; }
+    .dot.active { background: white; transform: scale(1.3); }
+
+    .is-zoomed .nav, .is-zoomed #lb-pagination { display: none !important; }
+
+    .close-btn { position: absolute; top: 15px; right: 25px; font-size: 40px; cursor: pointer; color: #888; }
+
+    /* --- ZMIANY DLA TELEFONU --- */
+    @media (max-width: 800px) {
+        .tools { gap: 8px; }
+        /* Każdy filtr zajmuje ok. 48% szerokości -> dwa obok siebie */
+        .filter-select { flex: 1 1 calc(50% - 10px); min-width: 140px; }
+        /* Wyszukiwarka wypełnia wolne miejsce w drugim rzędzie */
+        #search-bar { flex: 1 1 calc(50% - 10px); }
         
-        /* --- NAGŁÓWEK (Poprawiona symetria linii) --- */
-        header { 
-            background: var(--bg-color); 
-            padding: 20px 0 0 0; /* Usunięty dolny padding dla precyzji */
-            text-align: center; 
-            border-bottom: 1px solid var(--border-color); 
-            position: sticky; top: 0; z-index: 100; 
-        }
-
-        h1 { color: #33322e; font-size: 1.8rem; font-weight: 400; text-transform: uppercase; letter-spacing: 4px; margin: 0; }
-
-        .tools { 
-            max-width: 1400px; 
-            margin: 15px auto; /* Symetryczny odstęp 15px od góry i dołu (linii) */
-            padding: 0 10px; 
-            display: flex; gap: 20px; align-items: center; flex-wrap: wrap; justify-content: center;
-        }
-
-        .filter-select, #search-bar { 
-            padding: 12px; border: 1px solid #ccc; border-radius: 8px; 
-            font-size: 0.9rem; outline: none; background: white;
-        }
-        .filter-select { flex: 0 0 160px; }
-        #search-bar { flex-grow: 1; }
-
-        .container { 
-            display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); 
-            gap: 25px; padding: 20px; max-width: 1400px; margin: 0 auto; 
-        }
-
-        .card { 
-            background: white; border: 1px solid #ddd; padding: 15px; 
-            cursor: pointer; transition: 0.3s; display: flex; flex-direction: column; border-radius: 8px; 
-        }
-        .card img { width: 100%; height: 200px; object-fit: cover; border-radius: 4px; background: #eee; }
-        .card h3 { margin: 15px 0 5px 0; font-size: 1.1rem; }
-        .card .meta { color: var(--accent-color); font-weight: bold; font-size: 0.85rem; margin-bottom: 10px; }
-        .card .short-desc { color: #666; font-size: 0.85rem; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
-
-        /* --- OKNA (MODAL & LIGHTBOX) --- */
-        #modal-overlay, #lightbox-overlay { 
-            position: fixed; inset: 0; display: none; 
-            justify-content: center; align-items: center; padding: 0; 
-        }
-        
-        #modal-overlay { background: rgba(0,0,0,0.85); z-index: 1000; padding: 20px; }
-        #modal-content { 
-            background: white; width: 100%; max-width: 900px; max-height: 90vh; 
-            overflow-y: auto; padding: 30px; position: relative; border-radius: 12px; 
-        }
-
-        .modal-gallery { display: flex; gap: 12px; overflow-x: auto; padding-bottom: 15px; margin-bottom: 20px; border-bottom: 1px solid #eee; }
-        .modal-gallery img { height: 120px; cursor: pointer; border: 2px solid #ddd; border-radius: 4px; }
-
-        /* LIGHTBOX - Kluczowe ustawienia dotyku */
-        #lightbox-overlay { 
-            background: #000; z-index: 2000; overflow: hidden; 
-            /* Pozwala na systemowy Pinch-Zoom (dwa palce) */
-            touch-action: pinch-zoom; 
-        }
-
-        #lightbox-img { 
-            max-width: 100%; max-height: 100%; object-fit: contain; 
-            transition: transform 0.3s ease, opacity 0.3s ease;
-            z-index: 2050; display: block; will-change: transform;
-        }
-        #lightbox-img.zoomed { cursor: zoom-out; }
-
-        .lb-close { position: absolute; top: 10px; right: 20px; color: white; font-size: 40px; cursor: pointer; z-index: 2300; text-shadow: 0 0 10px #000; }
-        
-        .nav { 
-            position: absolute; color: white; font-size: 50px; cursor: pointer; 
-            padding: 20px; top: 50%; transform: translateY(-50%); 
-            user-select: none; z-index: 2200; text-shadow: 0 0 15px #000;
-        }
-        
-        #lb-pagination {
-            position: absolute; bottom: 20px; left: 50%;
-            transform: translateX(-50%); display: flex; gap: 10px; z-index: 2300;
-        }
-        .dot { width: 8px; height: 8px; background: rgba(255,255,255,0.4); border-radius: 50%; }
-        .dot.active { background: white; transform: scale(1.3); }
-
-        .is-zoomed .nav, .is-zoomed #lb-pagination { display: none !important; }
-
-        .close-btn { position: absolute; top: 15px; right: 25px; font-size: 40px; cursor: pointer; color: #888; }
-
-        @media (max-width: 800px) {
-            .nav { font-size: 35px; padding: 10px; opacity: 0.7; }
-            .container { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
-            #modal-content { padding: 15px; width: 95%; }
-            .modal-gallery img { height: 70px; }
-        }
-    </style>
+        .nav { font-size: 35px; padding: 10px; opacity: 0.7; }
+        .container { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
+        #modal-content { padding: 15px; width: 95%; }
+        .modal-gallery img { height: 70px; }
+    }
+</style>
 </head>
 <body>
 
@@ -325,3 +331,4 @@
 </script>
 </body>
 </html>
+
