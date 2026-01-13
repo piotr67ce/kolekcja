@@ -241,7 +241,7 @@
         const item = allItems[i];
         currentPhotos = item.zdjecia;
         let thumbs = item.zdjecia.map((id, idx) => `<img src="${getUrl(id, 'w200')}" onclick="openLightbox(${idx}, event)">`).join('');
-        document.getElementById('m-body').innerHTML = `<div class="modal-gallery">${thumbs}</div><h2>$ c[1] {item.nazwa}</h2><p style="color:#b2945e;font-weight:bold;">${item.kraj} | ${item.wiek} | ${item.typ}</p><div style="white-space:pre-wrap;line-height:1.7;">${item.opisF}</div>`;
+        document.getElementById('m-body').innerHTML = `<div class="modal-gallery">${thumbs}</div><h2>${item.nazwa}</h2><p style="color:#b2945e;font-weight:bold;">${item.kraj} | ${item.wiek} | ${item.typ}</p><div style="white-space:pre-wrap;line-height:1.7;">${item.opisF}</div>`;
         document.getElementById('modal-overlay').style.display = 'flex';
         document.body.style.overflow = 'hidden';
     };
@@ -371,6 +371,7 @@
 </script>
 </body>
 </html>
+
 
 
 
