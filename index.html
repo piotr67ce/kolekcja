@@ -12,9 +12,26 @@
             --border-color: #d1d1ca;
         }
         body { margin: 0; background-color: var(--bg-color); font-family: 'Segoe UI', sans-serif; color: var(--text-color); }
-        header { background: var(--bg-color); padding: 20px 0; text-align: center; border-bottom: 1px solid var(--border-color); position: sticky; top: 0; z-index: 100; }
+       header { 
+    background: var(--bg-color); 
+    padding: 20px 0 0 0; /* Usunęliśmy dolny padding (0 na końcu) */
+    text-align: center; 
+    border-bottom: 1px solid var(--border-color); 
+    position: sticky; 
+    top: 0; 
+    z-index: 100; 
+}
         h1 { color: #33322e; font-size: 1.8rem; font-weight: 400; text-transform: uppercase; letter-spacing: 4px; margin: 0; }
-        .tools { max-width: 1400px; margin: 15px auto; padding: 0 10px; display: flex; gap: 20px; align-items: center; flex-wrap: wrap; }
+       .tools { 
+    max-width: 1400px; 
+    margin: 15px auto; /* 15px nad i pod filtrami - to daje symetrię względem linii */
+    padding: 0 10px; 
+    display: flex; 
+    gap: 20px; 
+    align-items: center; 
+    flex-wrap: wrap;
+    justify-content: center; /* Opcjonalnie: wyśrodkuje filtry jeśli jest ich mało */
+}
         .filter-select, #search-bar { padding: 12px; border: 1px solid #ccc; border-radius: 8px; font-size: 0.9rem; outline: none; background: white; }
         #search-bar { flex-grow: 1; }
         .container { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 25px; padding: 20px; max-width: 1400px; margin: 0 auto; }
@@ -306,3 +323,4 @@
 </script>
 </body>
 </html>
+
