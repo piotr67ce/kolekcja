@@ -2,10 +2,8 @@
 <html lang="pl">
 <head>
     <meta charset="UTF-8">
-    <meta name="robots" content="noindex, nofollow">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
     <title>Moja Kolekcja Broni</title>
-    <link rel="icon" type="image/png" href="./miecz1.png">
     <style>
         :root {
             --bg-color: #f5f5f0;
@@ -47,21 +45,17 @@
             background: white; border: 1px solid #ddd; padding: 15px; 
             cursor: pointer; transition: 0.3s; display: flex; flex-direction: column; border-radius: 8px; 
         }
-        .card:hover { transform: translateY(-5px); box-shadow: 0 8px 20px rgba(0,0,0,0.15); }
         .card img { width: 100%; height: 200px; object-fit: cover; border-radius: 4px; background: #eee; }
-        .card h3 { margin: 15px 0 5px 0; font-size: 1.1rem; color: #111; }
+        .card h3 { margin: 15px 0 5px 0; font-size: 1.1rem; }
         .card .meta { color: var(--accent-color); font-weight: bold; font-size: 0.85rem; margin-bottom: 10px; }
-        .card .short-desc { 
-            color: #666; font-style: italic; font-size: 0.85rem; line-height: 1.4;
-            display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
-        }
+        .card .short-desc { color: #666; font-size: 0.85rem; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
 
         #modal-overlay, #lightbox-overlay { 
             position: fixed; inset: 0; display: none; 
-            justify-content: center; align-items: center; padding: 20px; 
+            justify-content: center; align-items: center; padding: 0; 
         }
         
-        #modal-overlay { background: rgba(0,0,0,0.85); z-index: 1000; }
+        #modal-overlay { background: rgba(0,0,0,0.85); z-index: 1000; padding: 20px; }
         #modal-content { 
             background: white; width: 100%; max-width: 900px; max-height: 90vh; 
             overflow-y: auto; padding: 30px; position: relative; border-radius: 12px; 
@@ -70,66 +64,51 @@
         .modal-gallery { display: flex; gap: 12px; overflow-x: auto; padding-bottom: 15px; margin-bottom: 20px; border-bottom: 1px solid #eee; }
         .modal-gallery img { height: 120px; cursor: pointer; border: 2px solid #ddd; border-radius: 4px; }
 
-        #lightbox-overlay { 
-            background: #000; z-index: 2000; overflow: hidden; 
-            touch-action: none; cursor: grab;
-        }
-        #lightbox-overlay:active { cursor: grabbing; }
-
+        #lightbox-overlay { background: #000; z-index: 2000; overflow: hidden; touch-action: none; }
         #lightbox-img { 
-            max-width: 95%; max-height: 95%; object-fit: contain; 
-            transition: transform 0.3s ease, opacity 0.3s ease; cursor: zoom-in;
-            transform-origin: center; z-index: 2050; display: block;
-            will-change: transform; user-select: none; -webkit-user-drag: none;
+            max-width: 100%; max-height: 100%; object-fit: contain; 
+            transition: transform 0.3s ease, opacity 0.3s ease;
+            z-index: 2050; display: block; will-change: transform;
         }
-        #lightbox-img.zoomed { transform: scale(2.5); cursor: zoom-out; }
+        #lightbox-img.zoomed { cursor: zoom-out; }
 
-        .lb-close { position: absolute; top: 20px; right: 30px; color: white; font-size: 50px; cursor: pointer; z-index: 2300; }
+        .lb-close { position: absolute; top: 10px; right: 20px; color: white; font-size: 40px; cursor: pointer; z-index: 2300; text-shadow: 0 0 10px #000; }
         
         .nav { 
-            position: absolute; color: white; font-size: 60px; cursor: pointer; 
-            padding: 30px; top: 50%; transform: translateY(-50%); 
-            user-select: none; z-index: 2200; transition: opacity 0.3s;
+            position: absolute; color: white; font-size: 50px; cursor: pointer; 
+            padding: 20px; top: 50%; transform: translateY(-50%); 
+            user-select: none; z-index: 2200; text-shadow: 0 0 15px #000;
         }
         
-        /* Paginacja kropkowa */
         #lb-pagination {
-            position: absolute; bottom: 30px; left: 50%;
-            transform: translateX(-50%); display: flex; gap: 12px; z-index: 2300;
-            transition: opacity 0.3s;
+            position: absolute; bottom: 20px; left: 50%;
+            transform: translateX(-50%); display: flex; gap: 10px; z-index: 2300;
         }
-        .dot {
-            width: 10px; height: 10px; background: rgba(255, 255, 255, 0.3);
-            border-radius: 50%; cursor: pointer; transition: 0.3s;
-        }
-        .dot.active { background: white; transform: scale(1.4); }
+        .dot { width: 8px; height: 8px; background: rgba(255,255,255,0.4); border-radius: 50%; }
+        .dot.active { background: white; transform: scale(1.3); }
 
-        /* Ukrywanie nawigacji przy zoomie */
-        #lightbox-img.zoomed ~ .nav, 
-        #lightbox-img.zoomed ~ #lb-pagination { opacity: 0; pointer-events: none; }
+        /* Ukrywanie nawigacji przy powiększeniu */
+        .is-zoomed .nav, .is-zoomed #lb-pagination { display: none !important; }
 
         .close-btn { position: absolute; top: 15px; right: 25px; font-size: 40px; cursor: pointer; color: #888; }
 
         @media (max-width: 800px) {
-            .tools { flex-direction: column; gap: 8px; padding: 5px 15px; }
-            .filter-select, #search-bar { width: 100%; flex: 1 0 auto; font-size: 14px; padding: 8px 10px; height: 40px; }
-            .container { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; padding: 10px; }
-            #modal-content { padding: 15px; width: 95%; max-height: 95vh; }
-            .modal-gallery img { height: 80px; }
-            .nav { display: none; } /* Na mobile używamy tylko swipe */
-            #lb-pagination { bottom: 20px; }
+            .nav { font-size: 35px; padding: 10px; opacity: 0.7; }
+            .container { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
+            #modal-content { padding: 15px; width: 95%; }
+            .modal-gallery img { height: 70px; }
         }
     </style>
 </head>
 <body>
 
 <header>
-    <h1>Moja Kolekcja Broni</h1>
+    <h1>Moja Kolekcja Broni a</h1>
     <div class="tools">
         <select id="type-filter" class="filter-select" onchange="filterData()"><option value="">Wszystkie typy</option></select>
         <select id="country-filter" class="filter-select" onchange="filterData()"><option value="">Wszystkie kraje</option></select>
         <select id="age-filter" class="filter-select" onchange="filterData()"><option value="">Wszystkie lata</option></select>
-        <input type="text" id="search-bar" placeholder="Szukaj w opisie lub nazwie..." oninput="filterData()">
+        <input type="text" id="search-bar" placeholder="Szukaj..." oninput="filterData()">
     </div>
 </header>
 
@@ -144,9 +123,9 @@
 
 <div id="lightbox-overlay" onclick="closeL()">
     <span class="lb-close" onclick="closeL()">&times;</span>
-    <div class="nav" style="left:10px" onclick="move(-1, event)">&#10094;</div>
-    <img id="lightbox-img" src="" alt="Powiększenie" onclick="event.stopPropagation()">
-    <div class="nav" style="right:10px" onclick="move(1, event)">&#10095;</div>
+    <div class="nav" style="left:5px" onclick="move(-1, event)">&#10094;</div>
+    <img id="lightbox-img" src="" alt="Powiększenie" onclick="toggleZoom(event)">
+    <div class="nav" style="right:5px" onclick="move(1, event)">&#10095;</div>
     <div id="lb-pagination" onclick="event.stopPropagation()"></div>
 </div>
 
@@ -156,14 +135,7 @@
     let currentIdx = 0;
 
     const getUrl = (id, size = 'w800') => id ? `https://drive.google.com/thumbnail?id=${id.toString().trim()}&sz=${size}` : '';
-    const getSmartSize = () => window.innerWidth < 800 ? 'w800' : 'w4000';
-
-    function preloadNext(idx) {
-        if (!currentPhotos.length) return;
-        const nextIdx = (idx + 1) % currentPhotos.length;
-        const img = new Image();
-        img.src = getUrl(currentPhotos[nextIdx], getSmartSize());
-    }
+    const getSmartSize = () => window.innerWidth < 800 ? 'w1000' : 'w4000';
 
     window.handleData = function(resp) {
         const rows = resp.table.rows;
@@ -171,13 +143,8 @@
             const c = r.c;
             if (!c || !c[1]) return null;
             let pics = [];
-            for (let i = 7; i < c.length; i++) {
-                if (c[i]?.v && c[i].v.length > 15) pics.push(c[i].v);
-            }
-            return {
-                nazwa: c[1]?.v || '', kraj: c[2]?.v || '', typ: c[3]?.v || '',
-                wiek: c[4]?.v || '', opisK: c[5]?.v || '', opisF: c[6]?.v || '', zdjecia: pics
-            };
+            for (let i = 7; i < c.length; i++) { if (c[i]?.v && c[i].v.length > 15) pics.push(c[i].v); }
+            return { nazwa: c[1]?.v || '', kraj: c[2]?.v || '', typ: c[3]?.v || '', wiek: c[4]?.v || '', opisK: c[5]?.v || '', opisF: c[6]?.v || '', zdjecia: pics };
         }).filter(x => x && x.zdjecia.length > 0);
         populateFilters();
         renderGallery(allItems);
@@ -188,8 +155,7 @@
         const fill = (id, data) => {
             const el = document.getElementById(id);
             if (!el) return;
-            el.innerHTML = `<option value="">${el.options[0].text}</option>` + 
-                           data.map(v => v ? `<option value="${v}">${v}</option>` : '').join('');
+            el.innerHTML = `<option value="">${el.options[0].text}</option>` + data.map(v => v ? `<option value="${v}">${v}</option>` : '').join('');
         };
         fill('type-filter', getUnique('typ'));
         fill('country-filter', getUnique('kraj'));
@@ -198,12 +164,12 @@
 
     function filterData() {
         const s = document.getElementById('search-bar').value.toLowerCase();
-        const fType = document.getElementById('type-filter').value;
-        const fCountry = document.getElementById('country-filter').value;
-        const fAge = document.getElementById('age-filter').value;
+        const fT = document.getElementById('type-filter').value;
+        const fC = document.getElementById('country-filter').value;
+        const fA = document.getElementById('age-filter').value;
         const filtered = allItems.filter(i => {
             const matchS = i.nazwa.toLowerCase().includes(s) || i.opisK.toLowerCase().includes(s);
-            return matchS && (!fType || i.typ === fType) && (!fCountry || i.kraj === fCountry) && (!fAge || i.wiek === fAge);
+            return matchS && (!fT || i.typ === fT) && (!fC || i.kraj === fC) && (!fA || i.wiek === fA);
         });
         renderGallery(filtered);
     }
@@ -212,28 +178,15 @@
         const gal = document.getElementById('gallery');
         gal.innerHTML = data.map(item => {
             const idx = allItems.indexOf(item);
-            return `
-            <div class="card" onclick="openModal(${idx})">
-                <img src="${getUrl(item.zdjecia[0], 'w600')}" loading="lazy" alt="${item.nazwa}">
-                <h3>${item.nazwa}</h3>
-                <div class="meta">${item.kraj} | ${item.wiek} | ${item.typ}</div>
-                <div class="short-desc">${item.opisK}</div>
-            </div>`;
-        }).join('') || "<p style='grid-column:1/-1;text-align:center;'>Brak wyników.</p>";
+            return `<div class="card" onclick="openModal(${idx})"><img src="${getUrl(item.zdjecia[0], 'w600')}" loading="lazy"><h3>${item.nazwa}</h3><div class="meta">${item.kraj} | ${item.wiek}</div><div class="short-desc">${item.opisK}</div></div>`;
+        }).join('') || "<p>Brak wyników.</p>";
     }
 
     window.openModal = (i) => {
         const item = allItems[i];
         currentPhotos = item.zdjecia;
-        let thumbs = item.zdjecia.map((id, idx) => 
-            `<img src="${getUrl(id, 'w200')}" onclick="openLightbox(${idx}, event)" alt="miniaturka">`
-        ).join('');
-        document.getElementById('m-body').innerHTML = `
-            <div class="modal-gallery">${thumbs}</div>
-            <h2 style="margin:10px 0;">${item.nazwa}</h2>
-            <p style="color:#b2945e; font-weight:bold; margin-bottom:20px;">${item.kraj} | ${item.wiek} | ${item.typ}</p>
-            <div style="white-space:pre-wrap; line-height:1.7; color:#444;">${item.opisF}</div>
-        `;
+        let thumbs = item.zdjecia.map((id, idx) => `<img src="${getUrl(id, 'w200')}" onclick="openLightbox(${idx}, event)">`).join('');
+        document.getElementById('m-body').innerHTML = `<div class="modal-gallery">${thumbs}</div><h2>${item.nazwa}</h2><p style="color:#b2945e;font-weight:bold;">${item.kraj} | ${item.wiek} | ${item.typ}</p><div style="white-space:pre-wrap;line-height:1.7;">${item.opisF}</div>`;
         document.getElementById('modal-overlay').style.display = 'flex';
         document.body.style.overflow = 'hidden';
     };
@@ -242,44 +195,29 @@
         if(e) e.stopPropagation();
         currentIdx = idx;
         const img = document.getElementById('lightbox-img');
-        img.classList.remove('zoomed');
-        img.style.transform = 'translateX(0)';
+        resetZoom();
         img.src = getUrl(currentPhotos[currentIdx], getSmartSize());
         document.getElementById('lightbox-overlay').style.display = 'flex';
         renderPagination();
-        preloadNext(currentIdx);
     };
 
     window.move = (step, e) => {
         if(e) e.stopPropagation();
+        if (document.getElementById('lightbox-img').classList.contains('zoomed')) return;
         currentIdx = (currentIdx + step + currentPhotos.length) % currentPhotos.length;
-        updateLightboxImage();
-    };
-
-    window.goToPhoto = (idx) => {
-        currentIdx = idx;
-        updateLightboxImage();
-    };
-
-    function updateLightboxImage() {
         const img = document.getElementById('lightbox-img');
-        img.classList.remove('zoomed');
         img.style.opacity = '0';
         setTimeout(() => {
             img.src = getUrl(currentPhotos[currentIdx], getSmartSize());
             img.style.transform = 'translateX(0)';
             img.style.opacity = '1';
             updatePagination();
-            preloadNext(currentIdx);
         }, 150);
-    }
+    };
 
     function renderPagination() {
         const container = document.getElementById('lb-pagination');
-        if (currentPhotos.length <= 1) { container.innerHTML = ''; return; }
-        container.innerHTML = currentPhotos.map((_, i) => 
-            `<div class="dot ${i === currentIdx ? 'active' : ''}" onclick="goToPhoto(${i})"></div>`
-        ).join('');
+        container.innerHTML = currentPhotos.length > 1 ? currentPhotos.map((_, i) => `<div class="dot ${i === currentIdx ? 'active' : ''}"></div>`).join('') : '';
     }
 
     function updatePagination() {
@@ -288,51 +226,59 @@
     }
 
     window.closeM = () => { document.getElementById('modal-overlay').style.display = 'none'; document.body.style.overflow='auto'; };
-    window.closeL = () => {
-        document.getElementById('lightbox-img').classList.remove('zoomed');
-        document.getElementById('lightbox-overlay').style.display = 'none';
-    };
+    window.closeL = () => { resetZoom(); document.getElementById('lightbox-overlay').style.display = 'none'; };
 
-    // --- LOGIKA SWIPE (TOUCH & MOUSE) ---
+    // --- ZAAWANSOWANY ZOOM I SWIPE ---
     const lbImg = document.getElementById('lightbox-img');
     const lbOverlay = document.getElementById('lightbox-overlay');
     let startX = 0;
-    let isDown = false;
+    let isMoving = false;
 
-    const startAction = (x) => {
+    function toggleZoom(e) {
+        e.stopPropagation();
+        if (lbImg.classList.contains('zoomed')) {
+            resetZoom();
+        } else {
+            lbImg.classList.add('zoomed');
+            lbOverlay.classList.add('is-zoomed');
+            const rect = lbImg.getBoundingClientRect();
+            const x = ((e.clientX || e.touches[0].clientX) - rect.left) / rect.width * 100;
+            const y = ((e.clientY || e.touches[0].clientY) - rect.top) / rect.height * 100;
+            lbImg.style.transformOrigin = `${x}% ${y}%`;
+            lbImg.style.transform = 'scale(2.5)';
+        }
+    }
+
+    function resetZoom() {
+        lbImg.classList.remove('zoomed');
+        lbOverlay.classList.remove('is-zoomed');
+        lbImg.style.transform = 'translateX(0) scale(1)';
+    }
+
+    lbOverlay.addEventListener('touchstart', e => {
         if (lbImg.classList.contains('zoomed')) return;
-        startX = x;
-        isDown = true;
+        startX = e.touches[0].clientX;
+        isMoving = true;
         lbImg.style.transition = 'none';
-    };
+    }, {passive: true});
 
-    const moveAction = (x) => {
-        if (!isDown || lbImg.classList.contains('zoomed')) return;
-        let diffX = x - startX;
+    lbOverlay.addEventListener('touchmove', e => {
+        if (!isMoving || lbImg.classList.contains('zoomed')) return;
+        let diffX = e.touches[0].clientX - startX;
         lbImg.style.transform = `translateX(${diffX}px)`;
-        lbImg.style.opacity = 1 - Math.abs(diffX) / 800;
-    };
+    }, {passive: true});
 
-    const endAction = (x) => {
-        if (!isDown) return;
-        isDown = false;
-        let diffX = x - startX;
+    lbOverlay.addEventListener('touchend', e => {
+        if (!isMoving || lbImg.classList.contains('zoomed')) return;
+        isMoving = false;
         lbImg.style.transition = 'transform 0.3s ease, opacity 0.3s ease';
-        if (Math.abs(diffX) > 100) {
+        let diffX = e.changedTouches[0].clientX - startX;
+        if (Math.abs(diffX) > 80) {
             window.move(diffX > 0 ? -1 : 1);
         } else {
             lbImg.style.transform = 'translateX(0)';
-            lbImg.style.opacity = '1';
         }
-    };
-
-    lbOverlay.addEventListener('touchstart', e => startAction(e.touches[0].clientX), {passive: true});
-    lbOverlay.addEventListener('touchmove', e => moveAction(e.touches[0].clientX), {passive: true});
-    lbOverlay.addEventListener('touchend', e => endAction(e.changedTouches[0].clientX), {passive: true});
-
-    lbOverlay.addEventListener('mousedown', e => startAction(e.clientX));
-    window.addEventListener('mousemove', e => moveAction(e.clientX));
-    window.addEventListener('mouseup', e => endAction(e.clientX));
+    }, {passive: true});
 
     // Klawiatura
     window.addEventListener('keydown', e => {
@@ -342,21 +288,6 @@
             if (e.key === 'Escape') closeL();
         }
     });
-
-    lbImg.addEventListener('click', e => {
-        e.stopPropagation();
-        lbImg.classList.toggle('zoomed');
-        if (lbImg.classList.contains('zoomed')) updateZoomOrigin(e);
-        else lbImg.style.transform = 'translateX(0)';
-    });
-
-    function updateZoomOrigin(e) {
-        const clientX = e.clientX || (e.touches ? e.touches[0].clientX : 0);
-        const clientY = e.clientY || (e.touches ? e.touches[0].clientY : 0);
-        const x = (clientX / window.innerWidth) * 100;
-        const y = (clientY / window.innerHeight) * 100;
-        lbImg.style.transformOrigin = `${x}% ${y}%`;
-    }
 
     const s = document.createElement('script');
     s.src = "https://docs.google.com/spreadsheets/d/1EJYBKJowcGvMT8_Dh6bxnY0swD85dW1SO50_c9jTTa4/gviz/tq?tqx=responseHandler:handleData&gid=1129470117";
