@@ -233,7 +233,7 @@
         const gal = document.getElementById('gallery');
         gal.innerHTML = data.map(item => {
             const idx = allItems.indexOf(item);
-            return `<div class="card" onclick="openModal(${idx})"><img src="${getUrl(item.zdjecia[0], 'w600')}" loading="lazy"><h3>${item.nazwa}</h3><div class="meta">${item.kraj} | ${item.wiek}</div><div class="short-desc">${item.opisK}</div></div>`;
+            return `<div class="card" onclick="openModal(${idx})"><img src="${getUrl(item.zdjecia[0], 'w600')}" loading="lazy"><h3>${item.nazwa}</h3><div class="meta">${item.kraj} | ${item.wiek} | ${item.typ}</div><div class="short-desc">${item.opisK}</div></div>`;
         }).join('') || "<p>Brak wyników.</p>";
     }
 
@@ -371,6 +371,7 @@
 </script>
 </body>
 </html>
+
 
 
 
