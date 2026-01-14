@@ -192,14 +192,23 @@
     const getUrl = (id, size = 'w800') => id ? `https://drive.google.com/thumbnail?id=${id.toString().trim()}&sz=${size}` : '';
     const getSmartSize = () => window.innerWidth < 800 ? 'w1000' : 'w4000';
 
-    window.handleData = function(resp) {
+window.handleData = function(resp) {
         const rows = resp.table.rows;
         allItems = rows.map(r => {
             const c = r.c;
             if (!c || !c[1]) return null;
             let pics = [];
             for (let i = 7; i < c.length; i++) { if (c[i]?.v && c[i].v.length > 15) pics.push(c[i].v); }
-            return { nazwa: c[1]?.v || '', kraj: c[2]?.v || '', typ: c[3]?.v || '', wiek: c[4]?.v || '', opisK: c[5]?.v || '', opisF: c[6]?.v || '', zdjecia: pics };
+            return { 
+                id: c[0]?.v || '', // Pobieramy ID z kolumny A
+                nazwa: c[1]?.v || '', 
+                kraj: c[2]?.v || '', 
+                typ: c[3]?.v || '', 
+                wiek: c[4]?.v || '', 
+                opisK: c[5]?.v || '', 
+                opisF: c[6]?.v || '', 
+                zdjecia: pics 
+            };
         }).filter(x => x && x.zdjecia.length > 0);
         populateFilters();
         renderGallery(allItems);
@@ -237,15 +246,35 @@
         }).join('') || "<p>Brak wyników.</p>";
     }
 
-    window.openModal = (i) => {
+//    window.openModal = (i) => {
+//        const item = allItems[i];
+ //       currentPhotos = item.zdjecia;
+//        let thumbs = item.zdjecia.map((id, idx) => `<img src="${getUrl(id, 'w200')}" onclick="openLightbox(${idx}, event)">`).join('');
+//        document.getElementById('m-body').innerHTML = `<div class="modal-gallery">${thumbs}</div><h2>${item.nazwa}</h2><p style="color:#b2945e;font-weight:bold;">${item.kraj} | ${item.wiek} | ${item.typ}</p><div style="white-space:pre-wrap;line-height:1.7;">${item.opisF}</div>`;
+//        document.getElementById('modal-overlay').style.display = 'flex';
+//        document.body.style.overflow = 'hidden';
+//    };
+
+window.openModal = (i) => {
         const item = allItems[i];
         currentPhotos = item.zdjecia;
         let thumbs = item.zdjecia.map((id, idx) => `<img src="${getUrl(id, 'w200')}" onclick="openLightbox(${idx}, event)">`).join('');
-        document.getElementById('m-body').innerHTML = `<div class="modal-gallery">${thumbs}</div><h2>${item.nazwa}</h2><p style="color:#b2945e;font-weight:bold;">${item.kraj} | ${item.wiek} | ${item.typ}</p><div style="white-space:pre-wrap;line-height:1.7;">${item.opisF}</div>`;
+
+        document.getElementById('m-body').innerHTML = `
+            <div class="modal-gallery">${thumbs}</div>
+            <h2>
+                <span style="color: var(--accent-color);">${item.id}.</span> ${item.nazwa}
+            </h2>
+            <p style="color: var(--accent-color); font-weight: bold;">
+                ${item.kraj} | ${item.wiek} | ${item.typ}
+            </p>
+            <div style="white-space: pre-wrap; line-height: 1.7;">${item.opisF}</div>
+        `;
         document.getElementById('modal-overlay').style.display = 'flex';
         document.body.style.overflow = 'hidden';
     };
 
+    
     window.openLightbox = (idx, e) => {
         if(e) e.stopPropagation();
         currentIdx = idx;
@@ -371,6 +400,7 @@
 </script>
 </body>
 </html>
+
 
 
 
