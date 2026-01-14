@@ -1,11 +1,10 @@
-
 <!DOCTYPE html>
 <html lang="pl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>Moja Kolekcja Broni</title>
-   <style>
+    <link rel="icon" type="image/png" href="./miecz1.png">
+    <title>Moja Kolekcja Broni</title><style>
     :root {
         --bg-color: #f5f5f0;
         --text-color: #333;
@@ -25,23 +24,52 @@
 
     h1 { color: #33322e; font-size: 1.8rem; font-weight: 400; text-transform: uppercase; letter-spacing: 4px; margin: 0; }
 
+/* 1. Domyślne ustawienia (Komputer) */
+/* 1. Ustawienia ogólne (Komputer i baza dla telefonu) */
     .tools { 
         max-width: 1400px; 
         margin: 15px auto; 
         padding: 0 10px; 
-        display: flex; gap: 10px; /* Zmniejszony odstęp dla lepszego pasowania na mobile */
-        align-items: center; flex-wrap: wrap; justify-content: center;
+        display: flex; 
+        gap: 10px; 
+        align-items: center; 
+        flex-wrap: wrap; 
+        justify-content: center;
     }
 
     .filter-select, #search-bar { 
-        padding: 12px; border: 1px solid #ccc; border-radius: 8px; 
-        font-size: 0.9rem; outline: none; background: white;
-        box-sizing: border-box;
+        padding: 12px; 
+        border: 1px solid #ccc; 
+        border-radius: 8px; 
+        font-size: 0.9rem; 
+        outline: none; 
+        background: white;
+        box-sizing: border-box; /* To pilnuje, by padding nie rozpychał elementów */
     }
     
-    /* Domyślnie dla komputerów */
-    .filter-select { flex: 0 0 160px; }
-    #search-bar { flex: 1 1 200px; }
+    /* Zmieniamy sztywne 160px na elastyczne wartości */
+    .filter-select { flex: 1 1 150px; } 
+    #search-bar { flex: 2 1 200px; }
+
+/* 2. Ustawienia dla Telefonu (Wymuszamy 2 elementy w rzędzie) */
+@media (max-width: 800px) {
+    .tools {
+        display: grid; /* Zmieniamy flex na grid dla absolutnej kontroli */
+        grid-template-columns: 1fr 1fr; /* Dwie równe kolumny */
+        gap: 8px;
+    }
+
+    .filter-select, #search-bar {
+        width: 100%; /* Każdy element zajmuje całą swoją komórkę w gridzie */
+        flex: none;  /* Wyłączamy stare ustawienia flex */
+        min-width: 0; /* Pozwalamy elementom być węższym niż ich zawartość */
+    }
+
+    /* Opcjonalnie: Jeśli chcesz, by szukajka była w drugim rzędzie obok 3-ciego filtra */
+    #search-bar {
+        grid-column: span 1; /* Zajmuje tylko jedną komórkę (obok filtra) */
+    }
+}
 
     .container { 
         display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); 
@@ -102,14 +130,24 @@
 
     .close-btn { position: absolute; top: 15px; right: 25px; font-size: 40px; cursor: pointer; color: #888; }
 
-    /* --- ZMIANY DLA TELEFONU --- */
+/* --- ZMIANY DLA TELEFONU --- */
     @media (max-width: 800px) {
-        .tools { gap: 8px; }
-        /* Każdy filtr zajmuje ok. 48% szerokości -> dwa obok siebie */
-        .filter-select { flex: 1 1 calc(50% - 10px); min-width: 140px; }
-        /* Wyszukiwarka wypełnia wolne miejsce w drugim rzędzie */
-        #search-bar { flex: 1 1 calc(50% - 10px); }
-        
+        /* Układ filtrów 2x2 */
+        .tools {
+            display: grid;
+            grid-template-columns: 1fr 1fr; /* Dwie równe kolumny */
+            gap: 8px;
+            padding: 0 10px;
+        }
+
+        .filter-select, #search-bar {
+            width: 100%;
+            flex: none;  /* Wyłączamy zasady flex, by nie psuły siatki */
+            min-width: 0; /* Pozwalamy elementom dopasować się do kolumny */
+            margin: 0;
+        }
+
+        /* Pozostałe style, które już miałeś i działają dobrze: */
         .nav { font-size: 35px; padding: 10px; opacity: 0.7; }
         .container { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
         #modal-content { padding: 15px; width: 95%; }
@@ -195,7 +233,7 @@
         const gal = document.getElementById('gallery');
         gal.innerHTML = data.map(item => {
             const idx = allItems.indexOf(item);
-            return `<div class="card" onclick="openModal(${idx})"><img src="${getUrl(item.zdjecia[0], 'w600')}" loading="lazy"><h3>${item.nazwa}</h3><div class="meta">${item.kraj} | ${item.wiek}</div><div class="short-desc">${item.opisK}</div></div>`;
+            return `<div class="card" onclick="openModal(${idx})"><img src="${getUrl(item.zdjecia[0], 'w600')}" loading="lazy"><h3>${item.nazwa}</h3><div class="meta">${item.kraj} | ${item.wiek} | ${item.typ}</div><div class="short-desc">${item.opisK}</div></div>`;
         }).join('') || "<p>Brak wyników.</p>";
     }
 
@@ -333,3 +371,8 @@
 </script>
 </body>
 </html>
+
+
+
+
+
