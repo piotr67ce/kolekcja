@@ -5,7 +5,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
     <link rel="icon" type="image/png" href="./miecz1.png">
-    <title>Moja Kolekcja Broni</title><style>
+    <title>Moja Kolekcja Broni</title>
+<style>
     :root {
         --bg-color: #f5f5f0;
         --text-color: #333;
@@ -25,8 +26,7 @@
 
     h1 { color: #33322e; font-size: 1.8rem; font-weight: 400; text-transform: uppercase; letter-spacing: 4px; margin: 0; }
 
-/* 1. Domyślne ustawienia (Komputer) */
-/* 1. Ustawienia ogólne (Komputer i baza dla telefonu) */
+    /* Narzędzia (Filtry i Szukajka) - Komputer */
     .tools { 
         max-width: 1400px; 
         margin: 15px auto; 
@@ -45,33 +45,13 @@
         font-size: 0.9rem; 
         outline: none; 
         background: white;
-        box-sizing: border-box; /* To pilnuje, by padding nie rozpychał elementów */
+        box-sizing: border-box;
     }
     
-    /* Zmieniamy sztywne 160px na elastyczne wartości */
     .filter-select { flex: 1 1 150px; } 
     #search-bar { flex: 2 1 200px; }
 
-/* 2. Ustawienia dla Telefonu (Wymuszamy 2 elementy w rzędzie) */
-@media (max-width: 800px) {
-    .tools {
-        display: grid; /* Zmieniamy flex na grid dla absolutnej kontroli */
-        grid-template-columns: 1fr 1fr; /* Dwie równe kolumny */
-        gap: 8px;
-    }
-
-    .filter-select, #search-bar {
-        width: 100%; /* Każdy element zajmuje całą swoją komórkę w gridzie */
-        flex: none;  /* Wyłączamy stare ustawienia flex */
-        min-width: 0; /* Pozwalamy elementom być węższym niż ich zawartość */
-    }
-
-    /* Opcjonalnie: Jeśli chcesz, by szukajka była w drugim rzędzie obok 3-ciego filtra */
-    #search-bar {
-        grid-column: span 1; /* Zajmuje tylko jedną komórkę (obok filtra) */
-    }
-}
-
+    /* Galeria kart */
     .container { 
         display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); 
         gap: 25px; padding: 20px; max-width: 1400px; margin: 0 auto; 
@@ -84,11 +64,15 @@
     .card img { width: 100%; height: 200px; object-fit: cover; border-radius: 4px; background: #eee; }
     .card h3 { margin: 15px 0 5px 0; font-size: 1.1rem; }
     .card .meta { color: var(--accent-color); font-weight: bold; font-size: 0.85rem; margin-bottom: 10px; }
-    .card .short-desc { color: #666; font-size: 0.85rem; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+    .card .short-desc { 
+        color: #666; font-size: 0.85rem; line-height: 1.4; 
+        display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; 
+    }
 
+    /* Modal i Lightbox */
     #modal-overlay, #lightbox-overlay { 
         position: fixed; inset: 0; display: none; 
-        justify-content: center; align-items: center; padding: 0; 
+        justify-content: center; align-items: center; 
     }
     
     #modal-overlay { background: rgba(0,0,0,0.85); z-index: 1000; padding: 20px; }
@@ -100,11 +84,7 @@
     .modal-gallery { display: flex; gap: 12px; overflow-x: auto; padding-bottom: 15px; margin-bottom: 20px; border-bottom: 1px solid #eee; }
     .modal-gallery img { height: 120px; cursor: pointer; border: 2px solid #ddd; border-radius: 4px; }
 
-    #lightbox-overlay { 
-        background: #000; z-index: 2000; overflow: hidden; 
-        touch-action: pinch-zoom; 
-    }
-
+    #lightbox-overlay { background: #000; z-index: 2000; overflow: hidden; touch-action: pinch-zoom; }
     #lightbox-img { 
         max-width: 100%; max-height: 100%; object-fit: contain; 
         transition: transform 0.3s ease, opacity 0.3s ease;
@@ -128,31 +108,45 @@
     .dot.active { background: white; transform: scale(1.3); }
 
     .is-zoomed .nav, .is-zoomed #lb-pagination { display: none !important; }
-
     .close-btn { position: absolute; top: 15px; right: 25px; font-size: 40px; cursor: pointer; color: #888; }
 
-/* --- ZMIANY DLA TELEFONU --- */
+    /* --- MOBILNE (Ekran poniżej 800px) --- */
     @media (max-width: 800px) {
-        /* Układ filtrów 2x2 */
         .tools {
             display: grid;
-            grid-template-columns: 1fr 1fr; /* Dwie równe kolumny */
+            grid-template-columns: 1fr 1fr;
             gap: 8px;
-            padding: 0 10px;
+            padding: 10px;
         }
 
         .filter-select, #search-bar {
             width: 100%;
-            flex: none;  /* Wyłączamy zasady flex, by nie psuły siatki */
-            min-width: 0; /* Pozwalamy elementom dopasować się do kolumny */
+            flex: none;
+            min-width: 0;
             margin: 0;
         }
 
-        /* Pozostałe style, które już miałeś i działają dobrze: */
-        .nav { font-size: 35px; padding: 10px; opacity: 0.7; }
-        .container { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
-        #modal-content { padding: 15px; width: 95%; }
+        /* Szukajka na pełną szerokość pod filtrami */
+        #search-bar {
+            grid-column: span 2; 
+        }
+
+        .container { 
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); 
+            gap: 10px; 
+            padding: 10px;
+        }
+
+        #modal-content { 
+            padding: 15px; 
+            width: 95%; 
+            max-height: 85vh;
+            margin-top: 5vh; 
+        }
+
         .modal-gallery img { height: 70px; }
+        .nav { font-size: 35px; padding: 10px; opacity: 0.7; }
+        h1 { font-size: 1.4rem; letter-spacing: 2px; }
     }
 </style>
 </head>
@@ -401,3 +395,4 @@ window.openModal = (i) => {
 </script>
 </body>
 </html>
+
