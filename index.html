@@ -409,24 +409,25 @@ window.openModal = (i) => {
         }
     }, {passive: true});
 
-// Obsługa klawiatury: ESC zamyka okna, strzałki zmieniają zdjęcia
 window.addEventListener('keydown', e => {
-    const lightbox = document.getElementById('lightbox-overlay');
-    const modal = document.getElementById('modal-overlay');
-
     if (e.key === 'Escape') {
-        // Jeśli otwarte jest duże zdjęcie, zamknij je
-        if (lightbox.style.display === 'flex') {
+        // 1. Sprawdzamy czy otwarty jest Lightbox (zdjęcie)
+        const lb = document.getElementById('lightbox-overlay');
+        if (lb && lb.style.display === 'flex') {
             closeL();
-        } 
-        // Jeśli zdjęcie jest zamknięte, ale otwarty jest opis broni, zamknij opis
-        else if (modal.style.display === 'flex') {
+            return; // Kończymy, żeby nie zamykać wszystkiego naraz
+        }
+
+        // 2. Sprawdzamy czy otwarty jest Modal (opis)
+        const mod = document.getElementById('modal-overlay');
+        if (mod && mod.style.display === 'flex') {
             closeM();
         }
     }
     
-    // Obsługa strzałek (tylko gdy przeglądamy zdjęcia w lightboxie)
-    if (lightbox.style.display === 'flex') {
+    // Obsługa strzałek - tylko jeśli Lightbox jest widoczny
+    const lbVisible = document.getElementById('lightbox-overlay').style.display === 'flex';
+    if (lbVisible) {
         if (e.key === 'ArrowLeft') window.move(-1);
         if (e.key === 'ArrowRight') window.move(1);
     }
@@ -439,6 +440,7 @@ window.addEventListener('keydown', e => {
 </script>
 </body>
 </html>
+
 
 
 
