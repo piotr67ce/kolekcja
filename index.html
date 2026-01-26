@@ -409,14 +409,28 @@ window.openModal = (i) => {
         }
     }, {passive: true});
 
-    // Klawiatura (Strzałki i ESC)
-    window.addEventListener('keydown', e => {
-        if (document.getElementById('lightbox-overlay').style.display === 'flex') {
-            if (e.key === 'ArrowLeft') window.move(-1);
-            if (e.key === 'ArrowRight') window.move(1);
-            if (e.key === 'Escape') closeL();
+// Obsługa klawiatury: ESC zamyka okna, strzałki zmieniają zdjęcia
+window.addEventListener('keydown', e => {
+    const lightbox = document.getElementById('lightbox-overlay');
+    const modal = document.getElementById('modal-overlay');
+
+    if (e.key === 'Escape') {
+        // Jeśli otwarte jest duże zdjęcie, zamknij je
+        if (lightbox.style.display === 'flex') {
+            closeL();
+        } 
+        // Jeśli zdjęcie jest zamknięte, ale otwarty jest opis broni, zamknij opis
+        else if (modal.style.display === 'flex') {
+            closeM();
         }
-    });
+    }
+    
+    // Obsługa strzałek (tylko gdy przeglądamy zdjęcia w lightboxie)
+    if (lightbox.style.display === 'flex') {
+        if (e.key === 'ArrowLeft') window.move(-1);
+        if (e.key === 'ArrowRight') window.move(1);
+    }
+});
 
     // Pobieranie danych z Google Sheets
     const s = document.createElement('script');
@@ -425,6 +439,7 @@ window.openModal = (i) => {
 </script>
 </body>
 </html>
+
 
 
 
