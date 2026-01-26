@@ -187,8 +187,13 @@
     </div>
 </header>
 
-<div class="container" id="gallery">Ładowanie kolekcji...</div>
-
+<div class="container" id="gallery">
+    <div id="status-area">
+        <div class="loader"></div>
+        <p style="text-align:center">Ładowanie kolekcji...</p>
+    </div>
+</div>
+    
 <div id="modal-overlay" onclick="closeM()">
     <div id="modal-content" onclick="event.stopPropagation()">
         <span class="close-btn" onclick="closeM()">&times;</span>
@@ -420,6 +425,7 @@ window.openModal = (i) => {
 </script>
 </body>
 </html>
+
 
 
 
