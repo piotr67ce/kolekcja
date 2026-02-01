@@ -1,11 +1,14 @@
 
+
 <!DOCTYPE html>
 <html lang="pl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
     <link rel="icon" type="image/png" href="./miecz1.png">
-    <title>Moja Kolekcja Broni</title><style>
+    <title>Moja Kolekcja Broni</title>
+    <meta name="robots" content="noindex, nofollow">
+<style>
     :root {
         --bg-color: #f5f5f0;
         --text-color: #333;
@@ -25,8 +28,7 @@
 
     h1 { color: #33322e; font-size: 1.8rem; font-weight: 400; text-transform: uppercase; letter-spacing: 4px; margin: 0; }
 
-/* 1. Domyślne ustawienia (Komputer) */
-/* 1. Ustawienia ogólne (Komputer i baza dla telefonu) */
+    /* Narzędzia (Filtry i Szukajka) - Komputer */
     .tools { 
         max-width: 1400px; 
         margin: 15px auto; 
@@ -45,33 +47,13 @@
         font-size: 0.9rem; 
         outline: none; 
         background: white;
-        box-sizing: border-box; /* To pilnuje, by padding nie rozpychał elementów */
+        box-sizing: border-box;
     }
     
-    /* Zmieniamy sztywne 160px na elastyczne wartości */
     .filter-select { flex: 1 1 150px; } 
     #search-bar { flex: 2 1 200px; }
 
-/* 2. Ustawienia dla Telefonu (Wymuszamy 2 elementy w rzędzie) */
-@media (max-width: 800px) {
-    .tools {
-        display: grid; /* Zmieniamy flex na grid dla absolutnej kontroli */
-        grid-template-columns: 1fr 1fr; /* Dwie równe kolumny */
-        gap: 8px;
-    }
-
-    .filter-select, #search-bar {
-        width: 100%; /* Każdy element zajmuje całą swoją komórkę w gridzie */
-        flex: none;  /* Wyłączamy stare ustawienia flex */
-        min-width: 0; /* Pozwalamy elementom być węższym niż ich zawartość */
-    }
-
-    /* Opcjonalnie: Jeśli chcesz, by szukajka była w drugim rzędzie obok 3-ciego filtra */
-    #search-bar {
-        grid-column: span 1; /* Zajmuje tylko jedną komórkę (obok filtra) */
-    }
-}
-
+    /* Galeria kart */
     .container { 
         display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); 
         gap: 25px; padding: 20px; max-width: 1400px; margin: 0 auto; 
@@ -84,11 +66,15 @@
     .card img { width: 100%; height: 200px; object-fit: cover; border-radius: 4px; background: #eee; }
     .card h3 { margin: 15px 0 5px 0; font-size: 1.1rem; }
     .card .meta { color: var(--accent-color); font-weight: bold; font-size: 0.85rem; margin-bottom: 10px; }
-    .card .short-desc { color: #666; font-size: 0.85rem; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+    .card .short-desc { 
+        color: #666; font-size: 0.85rem; line-height: 1.4; 
+        display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; 
+    }
 
+    /* Modal i Lightbox */
     #modal-overlay, #lightbox-overlay { 
         position: fixed; inset: 0; display: none; 
-        justify-content: center; align-items: center; padding: 0; 
+        justify-content: center; align-items: center; 
     }
     
     #modal-overlay { background: rgba(0,0,0,0.85); z-index: 1000; padding: 20px; }
@@ -100,17 +86,16 @@
     .modal-gallery { display: flex; gap: 12px; overflow-x: auto; padding-bottom: 15px; margin-bottom: 20px; border-bottom: 1px solid #eee; }
     .modal-gallery img { height: 120px; cursor: pointer; border: 2px solid #ddd; border-radius: 4px; }
 
-    #lightbox-overlay { 
-        background: #000; z-index: 2000; overflow: hidden; 
-        touch-action: pinch-zoom; 
-    }
-
+    #lightbox-overlay { background: #000; z-index: 2000; overflow: hidden; touch-action: pinch-zoom; }
     #lightbox-img { 
         max-width: 100%; max-height: 100%; object-fit: contain; 
         transition: transform 0.3s ease, opacity 0.3s ease;
         z-index: 2050; display: block; will-change: transform;
     }
-    #lightbox-img.zoomed { cursor: zoom-out; }
+   #lightbox-img.zoomed { 
+    cursor: crosshair; 
+    transition: transform 0.1s ease-out; object-fit: contain; /* Szybsza reakcja na ruch myszy */
+}
 
     .lb-close { position: absolute; top: 10px; right: 20px; color: white; font-size: 40px; cursor: pointer; z-index: 2300; text-shadow: 0 0 10px #000; }
     
@@ -128,32 +113,70 @@
     .dot.active { background: white; transform: scale(1.3); }
 
     .is-zoomed .nav, .is-zoomed #lb-pagination { display: none !important; }
-
     .close-btn { position: absolute; top: 15px; right: 25px; font-size: 40px; cursor: pointer; color: #888; }
 
-/* --- ZMIANY DLA TELEFONU --- */
+    /* --- MOBILNE (Ekran poniżej 800px) --- */
     @media (max-width: 800px) {
-        /* Układ filtrów 2x2 */
         .tools {
             display: grid;
-            grid-template-columns: 1fr 1fr; /* Dwie równe kolumny */
+            grid-template-columns: 1fr 1fr;
             gap: 8px;
-            padding: 0 10px;
+            padding: 10px;
         }
 
         .filter-select, #search-bar {
             width: 100%;
-            flex: none;  /* Wyłączamy zasady flex, by nie psuły siatki */
-            min-width: 0; /* Pozwalamy elementom dopasować się do kolumny */
+            flex: none;
+            min-width: 0;
             margin: 0;
         }
 
-        /* Pozostałe style, które już miałeś i działają dobrze: */
-        .nav { font-size: 35px; padding: 10px; opacity: 0.7; }
-        .container { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
-        #modal-content { padding: 15px; width: 95%; }
+        /* Szukajka na pełną szerokość pod filtrami */
+        #search-bar {
+            grid-column: span 1; 
+        }
+
+        .container { 
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); 
+            gap: 10px; 
+            padding: 10px;
+        }
+
+        #modal-content { 
+            padding: 15px; 
+            width: 95%; 
+            max-height: 85vh;
+            margin-top: 5vh; 
+        }
+
         .modal-gallery img { height: 70px; }
+        .nav { font-size: 35px; padding: 10px; opacity: 0.7; }
+        h1 { font-size: 1.4rem; letter-spacing: 2px; }
     }
+
+/* Spinner ładowania */
+.loader {
+    border: 5px solid #f3f3f3;
+    border-top: 5px solid var(--accent-color);
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin 1s linear infinite;
+    margin: 20px auto;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.error-msg {
+    color: #cc0000;
+    text-align: center;
+    padding: 20px;
+    font-weight: bold;
+}
+    
 </style>
 </head>
 <body>
@@ -168,8 +191,13 @@
     </div>
 </header>
 
-<div class="container" id="gallery">Ładowanie kolekcji...</div>
-
+<div class="container" id="gallery">
+    <div id="status-area">
+        <div class="loader"></div>
+        <p style="text-align:center">Ładowanie kolekcji...</p>
+    </div>
+</div>
+    
 <div id="modal-overlay" onclick="closeM()">
     <div id="modal-content" onclick="event.stopPropagation()">
         <span class="close-btn" onclick="closeM()">&times;</span>
@@ -319,8 +347,7 @@ window.openModal = (i) => {
     let startX = 0;
     let isMoving = false;
 
-    // Funkcja Zoom 2.5x na kliknięcie
-    function toggleZoom(e) {
+function toggleZoom(e) {
         e.stopPropagation();
         if (lbImg.classList.contains('zoomed')) {
             resetZoom();
@@ -328,7 +355,6 @@ window.openModal = (i) => {
             lbImg.classList.add('zoomed');
             lbOverlay.classList.add('is-zoomed');
             
-            // Pobranie koordynatów dla myszki lub dotyku
             const clientX = e.touches ? e.touches[0].clientX : e.clientX;
             const clientY = e.touches ? e.touches[0].clientY : e.clientY;
             
@@ -338,13 +364,24 @@ window.openModal = (i) => {
             
             lbImg.style.transformOrigin = `${x}% ${y}%`;
             lbImg.style.transform = 'scale(2.5)';
+
+            // Jeśli to kliknięcie myszką, zacznij śledzić ruch
+            if (!e.touches) lbOverlay.addEventListener('mousemove', followMouse);
         }
     }
-
-    function resetZoom() {
+    function followMouse(e) {
+        const rect = lbOverlay.getBoundingClientRect();
+        const x = ((e.clientX - rect.left) / rect.width) * 100;
+        const y = ((e.clientY - rect.top) / rect.height) * 100;
+        lbImg.style.transformOrigin = `${x}% ${y}%`;
+    }
+ function resetZoom() {
         lbImg.classList.remove('zoomed');
         lbOverlay.classList.remove('is-zoomed');
         lbImg.style.transform = 'translateX(0) scale(1)';
+        lbImg.style.transformOrigin = 'center center';
+        // Przestań śledzić mysz po wyłączeniu zoomu
+        lbOverlay.removeEventListener('mousemove', followMouse);
     }
 
     // --- START LOGIKI SWIPE Z ZABEZPIECZENIEM DLA PINCH-ZOOM ---
@@ -385,14 +422,29 @@ window.openModal = (i) => {
         }
     }, {passive: true});
 
-    // Klawiatura (Strzałki i ESC)
-    window.addEventListener('keydown', e => {
-        if (document.getElementById('lightbox-overlay').style.display === 'flex') {
-            if (e.key === 'ArrowLeft') window.move(-1);
-            if (e.key === 'ArrowRight') window.move(1);
-            if (e.key === 'Escape') closeL();
+window.addEventListener('keydown', e => {
+    if (e.key === 'Escape') {
+        // 1. Sprawdzamy czy otwarty jest Lightbox (zdjęcie)
+        const lb = document.getElementById('lightbox-overlay');
+        if (lb && lb.style.display === 'flex') {
+            closeL();
+            return; // Kończymy, żeby nie zamykać wszystkiego naraz
         }
-    });
+
+        // 2. Sprawdzamy czy otwarty jest Modal (opis)
+        const mod = document.getElementById('modal-overlay');
+        if (mod && mod.style.display === 'flex') {
+            closeM();
+        }
+    }
+    
+    // Obsługa strzałek - tylko jeśli Lightbox jest widoczny
+    const lbVisible = document.getElementById('lightbox-overlay').style.display === 'flex';
+    if (lbVisible) {
+        if (e.key === 'ArrowLeft') window.move(-1);
+        if (e.key === 'ArrowRight') window.move(1);
+    }
+});
 
     // Pobieranie danych z Google Sheets
     const s = document.createElement('script');
@@ -401,3 +453,11 @@ window.openModal = (i) => {
 </script>
 </body>
 </html>
+
+
+
+
+
+
+
+
